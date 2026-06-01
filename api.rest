@@ -1,0 +1,97 @@
+@baseUrl = http://localhost:5000/api
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImhyZCIsImlhdCI6MTc3OTM3NTEyNCwiZXhwIjoxNzc5NDYxNTI0fQ.5DnynGZcwgTQ2N8XcTCr3DzBbOIIWMxFu6yPDFAB71Q
+
+### 1. Register HRD
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Super HRD",
+  "email": "hrd@perusahaan.com",
+  "password": "password123",
+  "role": "hrd"
+}
+
+### 2. Login HRD
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "hrd@perusahaan.com",
+  "password": "password123"
+}
+
+### 3. Create Department (HRD Only)
+POST {{baseUrl}}/departments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "IT Support",
+  "description": "Divisi teknologi dan infrastruktur"
+}
+
+### 4. Get All Departments
+GET {{baseUrl}}/departments
+Authorization: Bearer {{authToken}}
+
+### 5. Create Work Location
+POST {{baseUrl}}/locations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Kantor Pusat",
+  "latitude": -6.1751,
+  "longitude": 106.8272,
+  "radius_meters": 100
+}
+
+### 6. Create Schedule for User (Use user_id from register/login)
+POST {{baseUrl}}/schedules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "day_of_week": 4,
+  "shift_start": "08:00:00",
+  "shift_end": "17:00:00"
+}
+
+### 7. Check-in (Simulasi Mobile)
+POST {{baseUrl}}/attendance/check-in
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "schedule_id": 1,
+  "latitude": -6.1751,
+  "longitude": 106.8272,
+  "selfie_url": "https://storage.com/foto-selfie.jpg",
+  "liveness_score": 0.95
+}
+
+### 8. Check-out
+POST {{baseUrl}}/attendance/check-out
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "attendance_id": 1
+}
+
+### 9. Get Attendance History
+GET {{baseUrl}}/attendance/history
+Authorization: Bearer {{authToken}}
+
+### 10. Update Attendance Rules
+PUT {{baseUrl}}/rules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "tolerance_minutes": 10,
+  "absent_after_minutes": 45
+}

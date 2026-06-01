@@ -1,0 +1,177 @@
+
+<style>
+  body { margin: 0; padding: 0; }
+  .wrap { padding: 1rem 0; font-size: 14px; color: var(--color-text-primary); }
+  h2 { font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
+  h3 { font-size: 14px; font-weight: 500; margin: 1.2rem 0 0.5rem; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .section { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.2rem; margin-bottom: 1rem; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .card { background: var(--color-background-primary); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; border: 1px solid var(--color-border-tertiary); }
+  .card .label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .card .val { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+  .b-purple { background: #EEEDFE; color: #3C3489; }
+  .b-teal   { background: #E1F5EE; color: #0F6E56; }
+  .b-amber  { background: #FAEEDA; color: #854F0B; }
+  .b-coral  { background: #FAECE7; color: #993C1D; }
+  .b-blue   { background: #E6F1FB; color: #185FA5; }
+  .b-green  { background: #EAF3DE; color: #3B6D11; }
+  @media (prefers-color-scheme: dark) {
+    .b-purple { background: #26215C; color: #CECBF6; }
+    .b-teal   { background: #04342C; color: #9FE1CB; }
+    .b-amber  { background: #412402; color: #FAC775; }
+    .b-coral  { background: #4A1B0C; color: #F5C4B3; }
+    .b-blue   { background: #042C53; color: #B5D4F4; }
+    .b-green  { background: #173404; color: #C0DD97; }
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 500; color: var(--color-text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 8px 6px; border-bottom: 1px solid var(--color-border-tertiary); }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .num { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .num-label { font-size: 11px; color: var(--color-text-tertiary); }
+  .row-stats { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .stat { flex: 1; background: var(--color-background-primary); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; border: 1px solid var(--color-border-tertiary); text-align: center; }
+</style>
+<div class="wrap">
+  <h2>Spesifikasi Final — Sistem Presensi Karyawan</h2>
+
+  <!-- Stats row -->
+  <div class="row-stats">
+    <div class="stat"><div class="num">3</div><div class="num-label">Services</div></div>
+    <div class="stat"><div class="num">8</div><div class="num-label">Tabel SQL</div></div>
+    <div class="stat"><div class="num">5</div><div class="num-label">Collections NoSQL</div></div>
+    <div class="stat"><div class="num">37</div><div class="num-label">Endpoints</div></div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="section">
+    <h3>Tech Stack</h3>
+    <div class="grid3">
+      <div class="card"><div class="label">Web (HRD)</div><div class="val">Next.js + JavaScript</div></div>
+      <div class="card"><div class="label">Backend API</div><div class="val">Node.js + Express</div></div>
+      <div class="card"><div class="label">Mobile (Karyawan)</div><div class="val">Flutter + Dart</div></div>
+      <div class="card"><div class="label">SQL Database</div><div class="val">PostgreSQL (Cloud SQL)</div></div>
+      <div class="card"><div class="label">NoSQL Database</div><div class="val">Firebase Firestore</div></div>
+      <div class="card"><div class="label">Auth</div><div class="val">JWT</div></div>
+      <div class="card"><div class="label">Maps</div><div class="val">Leaflet.js + OpenStreetMap</div></div>
+      <div class="card"><div class="label">Face Detection</div><div class="val">Google ML Kit (Flutter)</div></div>
+      <div class="card"><div class="label">Containerisasi</div><div class="val">Docker (untuk Cloud Run)</div></div>
+    </div>
+  </div>
+
+  <!-- Deploy -->
+  <div class="section">
+    <h3>Deployment</h3>
+    <table>
+      <tr><th>Service</th><th>Platform</th><th>Keterangan</th></tr>
+      <tr><td>Next.js Web</td><td><span class="badge b-purple">App Engine</span></td><td>Frontend + API Routes HRD</td></tr>
+      <tr><td>Express Backend</td><td><span class="badge b-teal">Cloud Run</span></td><td>REST API utama, butuh Docker</td></tr>
+      <tr><td>Flutter Mobile</td><td><span class="badge b-amber">APK</span></td><td>Diinstall di HP karyawan</td></tr>
+      <tr><td>PostgreSQL</td><td><span class="badge b-blue">Cloud SQL</span></td><td>Managed database GCP</td></tr>
+      <tr><td>Firestore</td><td><span class="badge b-coral">Firebase</span></td><td>NoSQL untuk log & metadata</td></tr>
+    </table>
+  </div>
+
+  <!-- Role -->
+  <div class="section">
+    <h3>Role Pengguna</h3>
+    <div class="grid2">
+      <div class="card">
+        <div class="label">HRD</div>
+        <div class="val" style="margin-bottom:6px">Akses via Web</div>
+        <div style="font-size:12px; color:var(--color-text-secondary); line-height:1.7">
+          Kelola karyawan & departemen<br>
+          Set lokasi + radius geofencing<br>
+          Approve/reject cuti & izin<br>
+          Input gaji manual<br>
+          Lihat rekap presensi
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Karyawan</div>
+        <div class="val" style="margin-bottom:6px">Akses via Mobile</div>
+        <div style="font-size:12px; color:var(--color-text-secondary); line-height:1.7">
+          Check-in/out + selfie + liveness<br>
+          Validasi geofencing otomatis<br>
+          Ajukan cuti/izin/sakit<br>
+          Lihat gaji & status presensi sendiri
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Database SQL -->
+  <div class="section">
+    <h3>PostgreSQL — 8 Tabel (min. 5 ✅)</h3>
+    <table>
+      <tr><th>#</th><th>Tabel</th><th>Isi</th></tr>
+      <tr><td>1</td><td><code>users</code></td><td>Data HRD & karyawan, role, dept</td></tr>
+      <tr><td>2</td><td><code>departments</code></td><td>Divisi (kasir, dapur, dll)</td></tr>
+      <tr><td>3</td><td><code>work_locations</code></td><td>Titik lokasi + radius geofencing</td></tr>
+      <tr><td>4</td><td><code>schedules</code></td><td>Jadwal kerja per karyawan</td></tr>
+      <tr><td>5</td><td><code>attendances</code></td><td>Rekap presensi + status + menit telat</td></tr>
+      <tr><td>6</td><td><code>leave_requests</code></td><td>Pengajuan izin/sakit/cuti</td></tr>
+      <tr><td>7</td><td><code>salaries</code></td><td>Rekap gaji bulanan per karyawan</td></tr>
+      <tr><td>8</td><td><code>attendance_rules</code></td><td>Aturan toleransi telat & bolos</td></tr>
+    </table>
+  </div>
+
+  <!-- Database NoSQL -->
+  <div class="section">
+    <h3>Firestore — 5 Collections (min. 5 ✅)</h3>
+    <table>
+      <tr><th>#</th><th>Collection</th><th>Isi</th></tr>
+      <tr><td>1</td><td><code>selfie_logs</code></td><td>Metadata foto selfie saat absen</td></tr>
+      <tr><td>2</td><td><code>face_validations</code></td><td>Hasil ML Kit liveness detection</td></tr>
+      <tr><td>3</td><td><code>gps_logs</code></td><td>Koordinat lokasi saat check-in</td></tr>
+      <tr><td>4</td><td><code>liveness_sessions</code></td><td>Data sementara proses liveness</td></tr>
+      <tr><td>5</td><td><code>notification_logs</code></td><td>Log notifikasi sistem</td></tr>
+    </table>
+  </div>
+
+  <!-- Endpoints -->
+  <div class="section">
+    <h3>Endpoints — 37 Total (min. 15 ✅)</h3>
+    <table>
+      <tr><th>Grup</th><th>Jumlah</th><th>Contoh</th></tr>
+      <tr><td>Auth</td><td>4</td><td>login, logout, get/update profile</td></tr>
+      <tr><td>Users</td><td>5</td><td>CRUD + list karyawan</td></tr>
+      <tr><td>Departments</td><td>4</td><td>CRUD departemen</td></tr>
+      <tr><td>Work Locations</td><td>4</td><td>CRUD titik geofencing</td></tr>
+      <tr><td>Schedules</td><td>4</td><td>CRUD jadwal kerja</td></tr>
+      <tr><td>Attendance</td><td>5</td><td>check-in, check-out, list, detail, delete</td></tr>
+      <tr><td>Leave Requests</td><td>4</td><td>CRUD + approve/reject</td></tr>
+      <tr><td>Salaries</td><td>5</td><td>CRUD + list per bulan</td></tr>
+      <tr><td>Attendance Rules</td><td>2</td><td>GET & PUT aturan</td></tr>
+    </table>
+  </div>
+
+  <!-- Fitur utama -->
+  <div class="section">
+    <h3>Fitur Utama</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px">
+      <span class="badge b-purple">Selfie + Liveness Detection</span>
+      <span class="badge b-teal">Geofencing (radius configurable)</span>
+      <span class="badge b-amber">Status presensi otomatis</span>
+      <span class="badge b-coral">Rekap gaji manual HRD</span>
+      <span class="badge b-blue">Approve/reject cuti</span>
+      <span class="badge b-green">Input lokasi via maps</span>
+      <span class="badge b-purple">JWT Auth + role validation</span>
+      <span class="badge b-teal">OpenStreetMap (gratis)</span>
+    </div>
+  </div>
+
+  <!-- Status Presensi -->
+  <div class="section">
+    <h3>Status Presensi</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px">
+      <span class="badge b-green">Hadir — check-in tepat waktu</span>
+      <span class="badge b-amber">Terlambat — melebihi toleransi</span>
+      <span class="badge b-coral">Alpha — tidak check-in</span>
+      <span class="badge b-blue">Izin — approved leave request</span>
+      <span class="badge b-purple">Sakit — leave request tipe sakit</span>
+    </div>
+  </div>
+</div>
