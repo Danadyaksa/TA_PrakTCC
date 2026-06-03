@@ -1,7 +1,53 @@
+import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'dart:math' show cos, sqrt, asin;
+import '../../core/constants/app_constants.dart';
+import '../../models/work_location_model.dart';
+import 'auth_service.dart';
 
 class LocationService {
+  final String _baseUrl = AppConstants.baseUrl;
+  final AuthService _authService = AuthService();
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _authService.getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  /// Fetch semua lokasi kerja dari backend
+  Future<List<WorkLocation>> getWorkLocations() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/locations'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        return data.map((item) => WorkLocation.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching work locations: $e');
+      return [];
+    }
+  }
+
+  /// Get lokasi kerja utama (biasanya yang pertama atau default)
+  Future<WorkLocation?> getPrimaryLocation() async {
+    try {
+      final locations = await getWorkLocations();
+      return locations.isNotEmpty ? locations.first : null;
+    } catch (e) {
+      print('Error getting primary location: $e');
+      return null;
+    }
+  }
+
   Future<Position> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;

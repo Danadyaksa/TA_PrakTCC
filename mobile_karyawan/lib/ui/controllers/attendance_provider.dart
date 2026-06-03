@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/attendance_service.dart';
-import '../models/attendance_model.dart';
+import '../../data/services/attendance_service.dart';
+import '../../models/attendance_model.dart';
 
 class AttendanceProvider extends ChangeNotifier {
   final AttendanceService _service = AttendanceService();

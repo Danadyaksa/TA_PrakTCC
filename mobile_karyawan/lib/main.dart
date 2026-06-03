@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mobile_karyawan/core/constants/app_colors.dart';
-import 'package:mobile_karyawan/data/providers/auth_provider.dart';
-import 'package:mobile_karyawan/data/providers/attendance_provider.dart';
-import 'package:mobile_karyawan/data/providers/leave_provider.dart';
-import 'package:mobile_karyawan/ui/screens/login_screen.dart';
-import 'package:mobile_karyawan/ui/screens/profile_screen.dart';
-import 'package:mobile_karyawan/ui/screens/home_screen.dart';
-import 'package:mobile_karyawan/ui/screens/history_screen.dart';
-import 'package:mobile_karyawan/ui/screens/leave_screen.dart';
+import 'package:mobile_karyawan/ui/controllers/auth_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/attendance_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/leave_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/schedule_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/notification_provider.dart';
+import 'package:mobile_karyawan/ui/views/login_screen.dart';
+import 'package:mobile_karyawan/ui/views/profile_screen.dart';
+import 'package:mobile_karyawan/ui/views/home_screen.dart';
+import 'package:mobile_karyawan/ui/views/history_screen.dart';
+import 'package:mobile_karyawan/ui/views/leave_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Initialize date formatting
   await initializeDateFormatting('id_ID', null);
   
   runApp(
@@ -21,6 +29,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AttendanceProvider()),
         ChangeNotifierProvider(create: (_) => LeaveProvider()),
+        ChangeNotifierProvider(create: (_) => ScheduleProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -37,7 +47,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-        useMaterialDesign: true,
         fontFamily: 'InstrumentSans',
       ),
       home: const AuthWrapper(),
@@ -58,7 +67,11 @@ class AuthWrapper extends StatelessWidget {
           );
         }
         
-        if (auth.isAuthenticated) {
+        if (auth.isAuthenticated && auth.user != null) {
+          // Start listening untuk notifikasi
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<NotificationProvider>().startListening(auth.user!.id);
+          });
           return const MainNavigation();
         }
         

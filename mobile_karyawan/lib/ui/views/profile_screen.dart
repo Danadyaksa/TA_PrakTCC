@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:mobile_karyawan/data/providers/auth_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/auth_provider.dart';
 import 'package:mobile_karyawan/core/constants/app_colors.dart';
 
 class ProfileScreen extends StatelessWidget {

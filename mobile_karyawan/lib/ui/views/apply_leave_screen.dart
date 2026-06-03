@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_karyawan/data/providers/leave_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/leave_provider.dart';
 import 'package:mobile_karyawan/core/constants/app_colors.dart';
 
 class ApplyLeaveScreen extends StatefulWidget {

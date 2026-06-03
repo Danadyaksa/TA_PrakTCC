@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/leave_service.dart';
-import '../models/leave_model.dart';
+import '../../data/services/leave_service.dart';
+import '../../models/leave_model.dart';
 
 class LeaveProvider extends ChangeNotifier {
   final LeaveService _service = LeaveService();

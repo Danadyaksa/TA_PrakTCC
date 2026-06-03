@@ -17,6 +17,21 @@ exports.getSchedules = async (req, res) => {
   }
 };
 
+// @desc    Get MY schedules (authenticated user)
+exports.getMySchedules = async (req, res) => {
+  try {
+    const userId = req.user.id; // Dari middleware auth
+    const result = await db.query(
+      'SELECT * FROM schedules WHERE user_id = $1 ORDER BY day_of_week',
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error getting my schedules:', err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // @desc    Create schedule
 exports.createSchedule = async (req, res) => {
   const { user_id, day_of_week, shift_start, shift_end } = req.body;

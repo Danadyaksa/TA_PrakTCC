@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084496833343",
+    "project_id": "presensi-tcc",
+    "storage_bucket": "presensi-tcc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084496833343:android:56e43356cfd4e7d18cc18a",
+        "android_client_info": {
+          "package_name": "com.example.mobile_karyawan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuQ7dNxZPRkrlkpAeG3WwLpgrRxm-o8go"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

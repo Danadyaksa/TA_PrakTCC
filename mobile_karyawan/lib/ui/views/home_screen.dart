@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_karyawan/data/providers/auth_provider.dart';
-import 'package:mobile_karyawan/data/providers/attendance_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/auth_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/attendance_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/schedule_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/notification_provider.dart';
+import 'package:mobile_karyawan/ui/views/attendance_camera_screen.dart';
 import 'package:mobile_karyawan/core/constants/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AttendanceProvider>().fetchHistory();
+      context.read<ScheduleProvider>().fetchTodaySchedule();
     });
   }
 
@@ -25,7 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final attendanceProv = context.watch<AttendanceProvider>();
+    final scheduleProv = context.watch<ScheduleProvider>();
+    final notificationProv = context.watch<NotificationProvider>();
     final todayAtt = attendanceProv.todayAttendance;
+    final todaySchedule = scheduleProv.todaySchedule;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,9 +59,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const CircleAvatar(
-                    backgroundColor: AppColors.primary,
-                    child: Icon(Icons.person, color: Colors.white),
+                  Stack(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: AppColors.primary,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      if (notificationProv.unreadCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${notificationProv.unreadCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -93,9 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      '08:00 - 17:00', // Hardcoded for now, will be dynamic from scheduleService
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                    Text(
+                      todaySchedule?.formattedShift ?? '08:00 - 17:00',
+                      style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -117,9 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     GestureDetector(
-import 'package:mobile_karyawan/ui/screens/attendance_camera_screen.dart';
-
-// ... inside _HomeScreenState onTap
                       onTap: todayAtt?.checkOut != null ? null : () {
                         if (todayAtt == null) {
                           Navigator.push(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_karyawan/data/providers/attendance_provider.dart';
+import 'package:mobile_karyawan/ui/controllers/attendance_provider.dart';
 import 'package:mobile_karyawan/core/constants/app_colors.dart';
-import 'package:mobile_karyawan/data/models/attendance_model.dart';
+import 'package:mobile_karyawan/models/attendance_model.dart';
 
 class AttendanceHistoryScreen extends StatefulWidget {
   const AttendanceHistoryScreen({super.key});
@@ -74,7 +74,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         : 'Tanggal tidak tersedia';
 
     return Container(
-      margin: const EdgeInsets.bottom(12),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
