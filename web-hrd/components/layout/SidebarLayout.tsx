@@ -14,10 +14,19 @@ import {
   ChevronRight,
   ClipboardCheck,
   FileText,
-  BadgeDollarSign
+  BadgeDollarSign,
+  Settings2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -28,12 +37,13 @@ const menuItems = [
   { name: "Presensi", href: "/dashboard/attendance", icon: ClipboardCheck },
   { name: "Cuti & Izin", href: "/dashboard/leaves", icon: FileText },
   { name: "Gaji", href: "/dashboard/salaries", icon: BadgeDollarSign },
-  { name: "Aturan", href: "/dashboard/settings", icon: Building2 },
+  { name: "Pengaturan", href: "/dashboard/settings", icon: Settings2 },
 ];
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -52,6 +62,33 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-screen bg-gray-50">
+      {/* Dialog konfirmasi logout */}
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Logout</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin keluar dari sistem?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowLogoutDialog(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={handleLogout}
+            >
+              Ya, Logout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Sidebar */}
       <aside 
         className={cn(
@@ -111,7 +148,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
             <Button 
               variant="ghost" 
               className={cn("w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50", isCollapsed && "justify-center")}
-              onClick={handleLogout}
+              onClick={() => setShowLogoutDialog(true)}
             >
               <LogOut className={cn(isCollapsed ? "mr-0" : "mr-3")} size={20} />
               {!isCollapsed && <span>Logout</span>}

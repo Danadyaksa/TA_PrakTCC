@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Plus, Trash2, Pencil } from "lucide-react";
 import dynamic from "next/dynamic";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast-notification";
 
 // Load MapPicker dynamically to avoid SSR issues with Leaflet
 const MapPicker = dynamic(() => import("@/components/layout/MapPicker"), { 
@@ -32,10 +34,12 @@ const MapPicker = dynamic(() => import("@/components/layout/MapPicker"), {
 });
 
 export default function LocationsPage() {
+  const { showToast, ToastComponent } = useToast();
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", onConfirm: () => {} });
   
   const [formData, setFormData] = useState({
     name: "",
@@ -94,19 +98,25 @@ export default function LocationsPage() {
       setIsDialogOpen(false);
       fetchData();
     } catch (error) {
-      alert("Gagal menyimpan lokasi");
+      showToast("Gagal menyimpan lokasi", "error");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Hapus lokasi ini?")) {
-      try {
-        await locationService.deleteLocation(id);
-        fetchData();
-      } catch (error) {
-        alert("Gagal menghapus");
-      }
-    }
+  const handleDelete = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Hapus Lokasi",
+      description: "Lokasi kerja ini akan dihapus permanen.",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          await locationService.deleteLocation(id);
+          fetchData();
+        } catch (error) {
+          showToast("Gagal menghapus lokasi", "error");
+        }
+      },
+    });
   };
 
   const updateCoordinates = (lat, lng) => {
@@ -255,6 +265,15 @@ export default function LocationsPage() {
           </TableBody>
         </Table>
       </div>
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant="destructive"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ open: false, title: "", description: "", onConfirm: () => {} })}
+      />
+      {ToastComponent}
     </SidebarLayout>
   );
 }

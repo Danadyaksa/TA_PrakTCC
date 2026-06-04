@@ -3,7 +3,7 @@ class LeaveRequest {
   final String type;
   final String startDate;
   final String endDate;
-  final String reason;
+  final String? reason;
   final String status;
 
   LeaveRequest({
@@ -11,7 +11,7 @@ class LeaveRequest {
     required this.type,
     required this.startDate,
     required this.endDate,
-    required this.reason,
+    this.reason,
     required this.status,
   });
 
@@ -24,5 +24,25 @@ class LeaveRequest {
       reason: json['reason'],
       status: json['status'],
     );
+  }
+
+  /// Format tanggal selesai untuk tampilan, misal "5 Jun 2026"
+  String get formattedEndDate {
+    try {
+      final date = DateTime.parse(endDate);
+      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (_) {
+      return endDate;
+    }
+  }
+
+  String get typeLabel {
+    switch (type.toLowerCase()) {
+      case 'cuti': return 'Cuti';
+      case 'izin': return 'Izin';
+      case 'sakit': return 'Sakit';
+      default: return type;
+    }
   }
 }

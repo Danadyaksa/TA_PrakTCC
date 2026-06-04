@@ -12,7 +12,9 @@ import 'package:mobile_karyawan/ui/views/login_screen.dart';
 import 'package:mobile_karyawan/ui/views/profile_screen.dart';
 import 'package:mobile_karyawan/ui/views/home_screen.dart';
 import 'package:mobile_karyawan/ui/views/history_screen.dart';
+import 'package:mobile_karyawan/ui/views/hrd_attendance_screen.dart';
 import 'package:mobile_karyawan/ui/views/leave_screen.dart';
+import 'package:mobile_karyawan/data/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +24,9 @@ void main() async {
   
   // Initialize date formatting
   await initializeDateFormatting('id_ID', null);
+
+  // Initialize notification service
+  await NotificationService().init();
   
   runApp(
     MultiProvider(
@@ -91,28 +96,41 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const AttendanceHistoryScreen(),
-    const LeaveScreen(),
-    const ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+    final isHrd = user?.role == 'hrd';
+
+    final List<Widget> screens = isHrd
+        ? [
+            const HomeScreen(),
+            const HrdAttendanceScreen(),
+            const LeaveScreen(),
+            const ProfileScreen(),
+          ]
+        : [
+            const HomeScreen(),
+            const AttendanceHistoryScreen(),
+            const LeaveScreen(),
+            const ProfileScreen(),
+          ];
+
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
-          BottomNavigationBarItem(icon: Icon(Icons.note_add), label: 'Cuti'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(isHrd ? Icons.people_alt_rounded : Icons.history),
+            label: isHrd ? 'Presensi' : 'Riwayat',
+          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.note_add), label: 'Cuti'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );

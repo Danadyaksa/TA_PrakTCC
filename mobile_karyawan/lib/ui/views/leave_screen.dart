@@ -109,7 +109,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            leave.reason,
+            leave.reason ?? '-',
             style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

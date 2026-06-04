@@ -37,7 +37,48 @@ class LocationService {
     }
   }
 
-  /// Get lokasi kerja utama (biasanya yang pertama atau default)
+  /// Get lokasi kerja yang paling dekat dengan posisi user
+  /// Returns null jika tidak ada lokasi sama sekali
+  Future<WorkLocation?> getNearestLocation(double userLat, double userLon) async {
+    try {
+      final locations = await getWorkLocations();
+      if (locations.isEmpty) return null;
+
+      WorkLocation? nearest;
+      double nearestDist = double.infinity;
+
+      for (final loc in locations) {
+        final dist = calculateDistance(userLat, userLon, loc.latitude, loc.longitude);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearest = loc;
+        }
+      }
+      return nearest;
+    } catch (e) {
+      print('Error getting nearest location: $e');
+      return null;
+    }
+  }
+
+  /// Cek apakah user dalam radius salah satu lokasi kerja
+  /// Returns lokasi yang match, atau null jika tidak ada yang match
+  Future<WorkLocation?> getMatchingLocation(double userLat, double userLon) async {
+    try {
+      final locations = await getWorkLocations();
+      for (final loc in locations) {
+        if (isWithinRadius(userLat, userLon, loc.latitude, loc.longitude, loc.radiusMeters)) {
+          return loc;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error checking matching location: $e');
+      return null;
+    }
+  }
+
+  /// Legacy — kept for compatibility
   Future<WorkLocation?> getPrimaryLocation() async {
     try {
       final locations = await getWorkLocations();

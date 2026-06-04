@@ -1,13 +1,15 @@
 class Schedule {
   final int id;
-  final int userId;
-  final int dayOfWeek; // 0: Sunday, 1: Monday, etc.
-  final String shiftStart; // Format: "HH:mm:ss"
+  final int? userId;        // nullable — jadwal per departemen tidak punya user_id
+  final int? departmentId;  // jadwal baru pakai department_id
+  final int dayOfWeek;
+  final String shiftStart;
   final String shiftEnd;
 
   Schedule({
     required this.id,
-    required this.userId,
+    this.userId,
+    this.departmentId,
     required this.dayOfWeek,
     required this.shiftStart,
     required this.shiftEnd,
@@ -15,11 +17,12 @@ class Schedule {
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return Schedule(
-      id: json['id'],
-      userId: json['user_id'],
-      dayOfWeek: json['day_of_week'],
-      shiftStart: json['shift_start'],
-      shiftEnd: json['shift_end'],
+      id: json['id'] as int,
+      userId: json['user_id'] as int?,
+      departmentId: json['department_id'] as int?,
+      dayOfWeek: json['day_of_week'] as int,
+      shiftStart: json['shift_start'] as String,
+      shiftEnd: json['shift_end'] as String,
     );
   }
 
@@ -27,15 +30,14 @@ class Schedule {
     return {
       'id': id,
       'user_id': userId,
+      'department_id': departmentId,
       'day_of_week': dayOfWeek,
       'shift_start': shiftStart,
       'shift_end': shiftEnd,
     };
   }
 
-  // Helper untuk format tampilan
   String get formattedShift {
-    // Konversi dari "08:00:00" ke "08:00"
     final start = shiftStart.substring(0, 5);
     final end = shiftEnd.substring(0, 5);
     return '$start - $end';

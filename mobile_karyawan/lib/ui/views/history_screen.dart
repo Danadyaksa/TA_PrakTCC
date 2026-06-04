@@ -64,13 +64,13 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     }
 
     final checkInTime = att.checkIn != null 
-        ? DateFormat('HH:mm').format(DateTime.parse(att.checkIn!))
+        ? DateFormat('HH:mm').format(DateTime.parse(att.checkIn!).toLocal())
         : '--:--';
     final checkOutTime = att.checkOut != null 
-        ? DateFormat('HH:mm').format(DateTime.parse(att.checkOut!))
+        ? DateFormat('HH:mm').format(DateTime.parse(att.checkOut!).toLocal())
         : '--:--';
     final date = att.checkIn != null 
-        ? DateFormat('EEEE, d MMM yyyy', 'id_ID').format(DateTime.parse(att.checkIn!))
+        ? DateFormat('EEEE, d MMM yyyy', 'id_ID').format(DateTime.parse(att.checkIn!).toLocal())
         : 'Tanggal tidak tersedia';
 
     return Container(

@@ -35,15 +35,37 @@ class AttendanceService {
       headers: await _getHeaders(),
       body: jsonEncode(data),
     );
-    return jsonDecode(response.body);
+    final body = jsonDecode(response.body);
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(body['message'] ?? 'Check-in gagal');
+    }
+    return body;
   }
 
-  Future<Map<String, dynamic>> checkOut(int attendanceId) async {
+  Future<Map<String, dynamic>> checkOut(int attendanceId, Map<String, dynamic> data) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/attendance/check-out'),
       headers: await _getHeaders(),
-      body: jsonEncode({'attendance_id': attendanceId}),
+      body: jsonEncode({
+        'attendance_id': attendanceId,
+        ...data,
+      }),
     );
     return jsonDecode(response.body);
+  }
+
+  /// HRD: daily summary — semua karyawan berjadwal pada tanggal tertentu
+  /// [date] format: 'YYYY-MM-DD', null = hari ini
+  Future<Map<String, dynamic>?> getDailySummary({String? date}) async {
+    final uri = Uri.parse(
+      date != null
+          ? '$_baseUrl/attendance/daily-summary?date=$date'
+          : '$_baseUrl/attendance/daily-summary',
+    );
+    final response = await http.get(uri, headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+    return null;
   }
 }

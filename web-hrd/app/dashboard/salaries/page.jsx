@@ -25,8 +25,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BadgeDollarSign, Plus } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast-notification";
 
 export default function SalariesPage() {
+  const { showToast, ToastComponent } = useToast();
   const [salaries, setSalaries] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +70,7 @@ export default function SalariesPage() {
       setIsDialogOpen(false);
       fetchData();
     } catch (error) {
-      alert("Gagal menyimpan gaji");
+      showToast("Gagal menyimpan gaji", "error");
     }
   };
 
@@ -216,6 +219,7 @@ export default function SalariesPage() {
           </TableBody>
         </Table>
       </div>
+      {ToastComponent}
     </SidebarLayout>
   );
 }

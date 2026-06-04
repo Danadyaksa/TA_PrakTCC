@@ -37,7 +37,14 @@ exports.login = async (req, res) => {
 
   try {
     // 1. Cari User
-    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    // 1. Cari User dengan JOIN department
+    const userResult = await db.query(
+      `SELECT u.*, d.name as department_name 
+       FROM users u 
+       LEFT JOIN departments d ON u.department_id = d.id 
+       WHERE u.email = $1`,
+      [email]
+    );
     if (userResult.rows.length === 0) {
       return res.status(400).json({ message: 'Email atau Password salah' });
     }
@@ -64,11 +71,70 @@ exports.login = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        department_name: user.department_name ?? null,
       }
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error saat login' });
+  }
+};
+
+// @desc  Get current logged-in user profile
+exports.getProfile = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT u.id, u.name, u.email, u.role, d.name as department_name
+       FROM users u
+       LEFT JOIN departments d ON u.department_id = d.id
+       WHERE u.id = $1`,
+      [req.user.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc  Update name
+exports.updateProfile = async (req, res) => {
+  const { name } = req.body;
+  try {
+    const result = await db.query(
+      'UPDATE users SET name = $1 WHERE id = $2 RETURNING id, name, email, role',
+      [name, req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc  Change password
+exports.changePassword = async (req, res) => {
+  const { current_password, new_password } = req.body;
+  try {
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const user = userResult.rows[0];
+
+    const isMatch = await bcrypt.compare(current_password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Password lama tidak sesuai' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(new_password, salt);
+
+    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, req.user.id]);
+    res.json({ message: 'Password berhasil diubah' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
   }
 };

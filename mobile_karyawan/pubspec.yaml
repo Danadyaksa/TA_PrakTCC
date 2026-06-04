@@ -45,6 +45,8 @@ dependencies:
   firebase_core: ^4.10.0
   cloud_firestore: ^6.5.0
   image: ^4.8.0
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

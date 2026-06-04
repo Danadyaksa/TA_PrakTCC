@@ -9,22 +9,25 @@ const getHeaders = () => {
 };
 
 export const scheduleService = {
-  getSchedules: async (userId) => {
-    let url = `${API_URL}/schedules`;
-    if (userId) url += `?userId=${userId}`;
-    const response = await fetch(url, {
+  // Get all schedules (grouped by dept on frontend)
+  getSchedules: async () => {
+    const response = await fetch(`${API_URL}/schedules`, {
       headers: getHeaders(),
     });
     return response.json();
   },
-  createSchedule: async (data) => {
-    const response = await fetch(`${API_URL}/schedules`, {
+
+  // Init Senin-Jumat default for a department
+  initDepartmentSchedule: async (department_id) => {
+    const response = await fetch(`${API_URL}/schedules/init-department`, {
       method: "POST",
       headers: getHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify({ department_id }),
     });
     return response.json();
   },
+
+  // Update single schedule slot (shift_start + shift_end)
   updateSchedule: async (id, data) => {
     const response = await fetch(`${API_URL}/schedules/${id}`, {
       method: "PUT",
@@ -33,8 +36,10 @@ export const scheduleService = {
     });
     return response.json();
   },
-  deleteSchedule: async (id) => {
-    const response = await fetch(`${API_URL}/schedules/${id}`, {
+
+  // Delete all schedules for a department
+  deleteDepartmentSchedule: async (department_id) => {
+    const response = await fetch(`${API_URL}/schedules/department/${department_id}`, {
       method: "DELETE",
       headers: getHeaders(),
     });

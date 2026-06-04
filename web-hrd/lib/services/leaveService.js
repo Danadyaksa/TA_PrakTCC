@@ -9,8 +9,12 @@ const getHeaders = () => {
 };
 
 export const leaveService = {
-  getLeaves: async () => {
-    const response = await fetch(`${API_URL}/leaves`, {
+  getLeaves: async ({ month, year } = {}) => {
+    const params = new URLSearchParams();
+    if (month) params.set("month", month);
+    if (year) params.set("year", year);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    const response = await fetch(`${API_URL}/leaves${query}`, {
       headers: getHeaders(),
     });
     return response.json();

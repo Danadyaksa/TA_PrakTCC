@@ -203,9 +203,11 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
     if (_controller == null || !_controller!.value.isInitialized) return;
     
     _controller?.stopImageStream();
-    setState(() => _statusText = "Memvalidasi lokasi...");
 
     try {
+      setState(() => _statusText = "Memvalidasi lokasi...");
+      print('🚀 START: _takeAndSubmit');
+      
       // Get user data
       final user = context.read<AuthProvider>().user;
       if (user == null) {
@@ -213,102 +215,121 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
       }
 
       // 1. Cek Lokasi
+      print('📍 Getting location...');
       final pos = await _locationService.getCurrentLocation();
       
-      // Fetch lokasi kantor dari API
-      final workLocation = await _locationService.getPrimaryLocation();
-      if (workLocation == null) {
-        throw Exception('Lokasi kantor tidak ditemukan');
-      }
-
-      bool inRadius = _locationService.isWithinRadius(
-        pos.latitude, 
-        pos.longitude, 
-        workLocation.latitude, 
-        workLocation.longitude, 
-        workLocation.radiusMeters
+      setState(() => _statusText = "Memeriksa radius...");
+      // Cek apakah user dalam radius salah satu lokasi kerja
+      final matchedLocation = await _locationService.getMatchingLocation(
+        pos.latitude,
+        pos.longitude,
       );
 
-      // [FIRESTORE] 1. Mencatat Log GPS
-      await _firestoreService.logGPS(
-        userId: user.id,
-        latitude: pos.latitude,
-        longitude: pos.longitude,
-        isInRadius: inRadius,
-        type: widget.isCheckIn ? 'check-in' : 'check-out',
-      );
-
-      if (!inRadius) {
+      if (matchedLocation == null) {
+        // Tidak ada lokasi yang match — tampilkan nama lokasi terdekat
+        final nearest = await _locationService.getNearestLocation(pos.latitude, pos.longitude);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Anda di luar radius ${workLocation.name}!')),
+            SnackBar(
+              content: Text(
+                nearest != null
+                  ? 'Anda di luar radius lokasi kerja. Terdekat: ${nearest.name}'
+                  : 'Anda di luar radius semua lokasi kerja!',
+              ),
+            ),
           );
           Navigator.pop(context);
         }
         return;
       }
 
+      final bool inRadius = true; // sudah pasti dalam radius karena matchedLocation != null
+      final workLocation = matchedLocation;
+
       // 2. Ambil Foto
+      setState(() => _statusText = "Mengambil foto...");
+      print('📸 Taking picture...');
       final image = await _controller!.takePicture();
       
-      // [FIRESTORE] 2. Mencatat Log Selfie
-      await _firestoreService.logSelfie(
-        userId: user.id,
-        isFaceDetected: _faceDetected,
-        livenessScore: _livenessScore,
-        status: _faceDetected && _livenessScore > 0.7 ? 'passed' : 'failed',
-        photoUrl: image.path, // TODO: Upload ke Cloud Storage
-      );
-
-      // [FIRESTORE] 3. Mencatat Face Validation (Collection baru!)
-      await _firestoreService.logFaceValidation(
-        userId: user.id,
-        faceDetected: _faceDetected,
-        livenessScore: _livenessScore,
-        smileDetected: _livenessScore > 0.8, // Simplified
-        eyesOpen: _faceDetected,
-        validationResult: _faceDetected && _livenessScore > 0.7 ? 'passed' : 'failed',
-      );
-
-      // 3. Get schedule ID
+      // 3. Get schedule ID (untuk check-in)
       final schedule = context.read<ScheduleProvider>().todaySchedule;
-      if (schedule == null) {
+      if (schedule == null && widget.isCheckIn) {
         throw Exception('Jadwal hari ini tidak ditemukan');
       }
 
-      // 4. Submit ke Backend
-      if (mounted) {
-        final success = await context.read<AttendanceProvider>().checkIn({
-          'schedule_id': schedule.id,
+      // 4. Submit ke Backend DULU (tunggu sampe selesai)
+      setState(() => _statusText = "Menyimpan presensi...");
+      print('📤 Submitting...');
+      
+      if (widget.isCheckIn) {
+        await context.read<AttendanceProvider>().checkIn({
+          'schedule_id': schedule!.id,
           'latitude': pos.latitude,
           'longitude': pos.longitude,
-          'selfie_url': image.path, // TODO: Upload ke Cloud Storage
+          'selfie_url': image.path,
           'liveness_score': _livenessScore
         });
-
-        if (success && mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Presensi berhasil!')),
-          );
-        }
+      } else {
+        await context.read<AttendanceProvider>().checkOut({
+          'latitude': pos.latitude,
+          'longitude': pos.longitude,
+          'selfie_url': image.path,
+          'liveness_score': _livenessScore
+        });
       }
-    } catch (e) {
-      print("Error submit: $e");
       
-      // [FIRESTORE] 4. Mencatat Log Error Mobile jika gagal
-      final user = context.read<AuthProvider>().user;
-      if (user != null) {
-        await _firestoreService.logError(
-          userId: user.id,
-          errorType: 'attendance_submission_error',
-          message: e.toString(),
+      print('✅ Submit DONE');
+      
+      // BARU POP SETELAH SUBMIT SELESAI
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${widget.isCheckIn ? "Check-in" : "Check-out"} berhasil!')),
         );
       }
-
+      
+      // Firestore logs (async di background)
+      try {
+        _firestoreService.logGPS(
+          userId: user.id,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          isInRadius: inRadius,
+          type: widget.isCheckIn ? 'check-in' : 'check-out',
+        );
+        
+        _firestoreService.logSelfie(
+          userId: user.id,
+          isFaceDetected: _faceDetected,
+          livenessScore: _livenessScore,
+          status: _faceDetected && _livenessScore > 0.7 ? 'passed' : 'failed',
+          photoUrl: image.path,
+        );
+        
+        _firestoreService.logFaceValidation(
+          userId: user.id,
+          faceDetected: _faceDetected,
+          livenessScore: _livenessScore,
+          smileDetected: _isSmiling,
+          eyesOpen: _eyesOpen,
+          validationResult: _faceDetected && _livenessScore > 0.7 ? 'passed' : 'failed',
+        );
+      } catch (firestoreError) {
+        print('⚠️ Firestore log error (non-critical): $firestoreError');
+      }
+      
+    } catch (e) {
+      print("❌ ERROR: $e");
+      
       if (mounted) {
+        // Bersihkan prefix "Exception: " supaya pesan lebih readable
+        final msg = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 4),
+          ),
         );
         Navigator.pop(context);
       }
@@ -437,6 +458,31 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
             child: IconButton(
               icon: const Icon(Icons.close, color: Colors.white, size: 32),
               onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          
+          // Title
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  widget.isCheckIn ? 'CHECK-IN' : 'CHECK-OUT',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

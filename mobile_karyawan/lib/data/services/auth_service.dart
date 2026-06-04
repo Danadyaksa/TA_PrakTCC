@@ -44,4 +44,34 @@ class AuthService {
     }
     return null;
   }
+
+  // Fetch profil terbaru dari API (include department_name)
+  Future<User?> fetchProfile() async {
+    try {
+      final token = await getToken();
+      if (token == null) return null;
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/auth/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return User.fromJson(data);
+      }
+    } catch (e) {
+      print('fetchProfile error: $e');
+    }
+    return null;
+  }
+
+  // Simpan user ke SharedPreferences
+  Future<void> saveUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user', jsonEncode(user.toJson()));
+  }
 }

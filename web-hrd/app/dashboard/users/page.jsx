@@ -4,42 +4,59 @@ import { useEffect, useState } from "react";
 import SidebarLayout from "@/components/layout/SidebarLayout";
 import { userService } from "@/lib/services/userService";
 import { departmentService } from "@/lib/services/departmentService";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, UserPlus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast-notification";
 
 export default function UsersPage() {
+  const { showToast, ToastComponent } = useToast();
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  // Form State
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", onConfirm: () => {} });
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     role: "karyawan",
-    department_id: ""
+    department_id: "",
+  });
+
+  const [editData, setEditData] = useState({
+    name: "",
+    email: "",
+    department_id: "",
   });
 
   useEffect(() => {
@@ -50,10 +67,9 @@ export default function UsersPage() {
     try {
       const [usersData, deptsData] = await Promise.all([
         userService.getUsers(),
-        departmentService.getDepartments()
+        departmentService.getDepartments(),
       ]);
-      // Hanya ambil yang rolenya karyawan untuk ditampilkan di manajemen karyawan
-      setUsers(usersData.filter((u) => u.role === "karyawan"));
+      setUsers(usersData.filter((u) => u.role !== "hrd"));
       setDepartments(deptsData);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -65,25 +81,56 @@ export default function UsersPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Selalu paksa role karyawan saat menambah dari sini
       await userService.createUser({ ...formData, role: "karyawan" });
-      setIsDialogOpen(false);
+      setIsAddDialogOpen(false);
       setFormData({ name: "", email: "", password: "", role: "karyawan", department_id: "" });
       fetchData();
     } catch (error) {
-      alert("Gagal menambah karyawan");
+      showToast("Gagal menambah karyawan", "error");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Apakah Anda yakin ingin menghapus karyawan ini?")) {
-      try {
-        await userService.deleteUser(id);
-        fetchData();
-      } catch (error) {
-        alert("Gagal menghapus");
-      }
+  const handleEditOpen = (user) => {
+    setEditingUser(user);
+    setEditData({
+      name: user.name,
+      email: user.email,
+      department_id: user.department_id?.toString() ?? "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await userService.updateUser(editingUser.id, {
+        name: editData.name,
+        email: editData.email,
+        department_id: editData.department_id || null,
+      });
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+      fetchData();
+    } catch (error) {
+      showToast("Gagal mengupdate karyawan", "error");
     }
+  };
+
+  const handleDelete = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Hapus Karyawan",
+      description: "Data karyawan akan dihapus permanen.",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          await userService.deleteUser(id);
+          fetchData();
+        } catch (error) {
+          showToast("Gagal menghapus", "error");
+        }
+      },
+    });
   };
 
   return (
@@ -94,7 +141,8 @@ export default function UsersPage() {
           <p className="text-gray-500">Kelola informasi seluruh karyawan Anda di sini.</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {/* Dialog Tambah */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <UserPlus size={18} />
@@ -108,35 +156,35 @@ export default function UsersPage() {
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Nama Lengkap</Label>
-                <Input 
-                  required 
+                <Input
+                  required
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input 
-                  type="email" 
-                  required 
+                <Input
+                  type="email"
+                  required
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input 
-                  type="password" 
-                  required 
+                <Input
+                  type="password"
+                  required
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Departemen</Label>
-                <Select 
-                  value={formData.department_id.toString()} 
-                  onValueChange={(v) => setFormData({...formData, department_id: v})}
+                <Select
+                  value={formData.department_id.toString()}
+                  onValueChange={(v) => setFormData({ ...formData, department_id: v })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih Departemen" />
@@ -158,6 +206,62 @@ export default function UsersPage() {
         </Dialog>
       </div>
 
+      {/* Dialog Edit */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Karyawan</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Nama Lengkap</Label>
+              <Input
+                required
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                required
+                value={editData.email}
+                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Departemen</Label>
+              <Select
+                value={editData.department_id.toString()}
+                onValueChange={(v) => setEditData({ ...editData, department_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Departemen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept.id} value={dept.id.toString()}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button type="submit">Simpan Perubahan</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
@@ -172,11 +276,15 @@ export default function UsersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">Memuat data...</TableCell>
+                <TableCell colSpan={5} className="text-center py-10">
+                  Memuat data...
+                </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-gray-500">Belum ada data karyawan.</TableCell>
+                <TableCell colSpan={5} className="text-center py-10 text-gray-500">
+                  Belum ada data karyawan.
+                </TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
@@ -190,12 +298,17 @@ export default function UsersPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="icon" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => handleEditOpen(user)}
+                    >
                       <Pencil size={16} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={() => handleDelete(user.id)}
                     >
@@ -208,6 +321,15 @@ export default function UsersPage() {
           </TableBody>
         </Table>
       </div>
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant="destructive"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ open: false, title: "", description: "", onConfirm: () => {} })}
+      />
+      {ToastComponent}
     </SidebarLayout>
   );
 }
