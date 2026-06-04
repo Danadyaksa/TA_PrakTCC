@@ -34,8 +34,5 @@ steps:
 options:
   logging: CLOUD_LOGGING_ONLY
 
-includedFiles:
-  - "web-hrd/**"
-
 substitutions:
   _BACKEND_URL: "https://presensi-backend-820401822458.asia-southeast2.run.app"
