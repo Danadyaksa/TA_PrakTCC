@@ -5,16 +5,16 @@ steps:
     args: ["ci"]
     dir: "web-hrd"
 
-  # Step 2: Build Next.js
+  # Step 2: Build Next.js — inject NEXT_PUBLIC_API_URL langsung saat build
   - name: "node:22"
     entrypoint: npm
     args: ["run", "build"]
     dir: "web-hrd"
     env:
-      - "NEXT_PUBLIC_API_URL=${_BACKEND_URL}/api"
+      - "NEXT_PUBLIC_API_URL=$_BACKEND_URL/api"
       - "NODE_ENV=production"
 
-  # Step 3: Inject backend URL ke app.yaml
+  # Step 3: Update app.yaml dengan URL backend yang benar (untuk runtime env)
   - name: "bash"
     args:
       - "-c"
