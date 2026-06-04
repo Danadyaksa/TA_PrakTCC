@@ -38,7 +38,7 @@ steps:
       - --min-instances=0
       - --max-instances=5
       - --set-env-vars=NODE_ENV=production
-      - --set-secrets=DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_NAME=DB_NAME:latest,DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,JWT_SECRET=JWT_SECRET:latest,/app/firebase-config.json=FIREBASE_CONFIG:latest
+      - --set-secrets=DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_NAME=DB_NAME:latest,DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,JWT_SECRET=JWT_SECRET:latest,FIREBASE_CONFIG=FIREBASE_CONFIG:latest
 
 images:
   - "asia-southeast2-docker.pkg.dev/$PROJECT_ID/presensi/backend:$SHORT_SHA"
