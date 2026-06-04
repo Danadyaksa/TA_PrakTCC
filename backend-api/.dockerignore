@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.env
+*.log
+check-database.js
+check-schedule.js
+test-create-user.js

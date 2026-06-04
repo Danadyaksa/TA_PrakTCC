@@ -1,0 +1,45 @@
+steps:
+  # Step 1: Install dependencies
+  - name: "node:20"
+    entrypoint: npm
+    args: ["ci"]
+    dir: "web-hrd"
+    env:
+      - "NODE_ENV=production"
+
+  # Step 2: Build Next.js (standalone output)
+  - name: "node:20"
+    entrypoint: npm
+    args: ["run", "build"]
+    dir: "web-hrd"
+    env:
+      # Inject backend URL dari Secret Manager saat build
+      # Atau ganti value langsung di sini setelah backend di-deploy
+      - "NEXT_PUBLIC_API_URL=${_BACKEND_URL}/api"
+      - "NODE_ENV=production"
+
+  # Step 3: Copy static & public assets ke standalone folder
+  # (Next.js standalone output butuh ini)
+  - name: "bash"
+    args:
+      - "-c"
+      - |
+          cp -r web-hrd/.next/static web-hrd/.next/standalone/.next/static
+          cp -r web-hrd/public web-hrd/.next/standalone/public
+
+  # Step 4: Deploy ke App Engine
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - app
+      - deploy
+      - web-hrd/frontend.yaml
+      - --quiet
+      - --project=$PROJECT_ID
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  # Override saat trigger: --substitutions _BACKEND_URL=https://...
+  _BACKEND_URL: "https://presensi-backend-XXXX-as.a.run.app"
