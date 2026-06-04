@@ -1,13 +1,14 @@
 // Script untuk membuat user test
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+require('dotenv').config();
 
 const pool = new Pool({
-  user: 'postgres',
-  password: 'hayabusa88',
-  database: 'db_presensi',
-  host: 'localhost',
-  port: 5432,
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'hayabusa88',
+  database: process.env.DB_NAME || 'db_presensi',
+  host: process.env.DB_HOST || '136.113.41.209',
+  port: process.env.DB_PORT || 5432,
 });
 
 async function createTestUsers() {
