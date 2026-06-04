@@ -8,6 +8,12 @@ node_modules/
 .env.*.local
 backend-api/.env
 web-hrd/.env.local
+DEPLOY.md
+FLUTTER_GUIDELINES.md
+GEMINI.md
+karyawan.sql
+PROGRESS.md
+system_presensi_final_spec.html
 
 # Firebase credentials (SENSITIVE - never commit)
 backend-api/firebase-config.json
