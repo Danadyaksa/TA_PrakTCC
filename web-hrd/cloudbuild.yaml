@@ -4,28 +4,22 @@ steps:
     entrypoint: npm
     args: ["ci"]
     dir: "web-hrd"
-    env:
-      - "NODE_ENV=production"
 
-  # Step 2: Build Next.js (standalone output)
+  # Step 2: Build Next.js
   - name: "node:20"
     entrypoint: npm
     args: ["run", "build"]
     dir: "web-hrd"
     env:
-      # Inject backend URL dari Secret Manager saat build
-      # Atau ganti value langsung di sini setelah backend di-deploy
       - "NEXT_PUBLIC_API_URL=${_BACKEND_URL}/api"
       - "NODE_ENV=production"
 
-  # Step 3: Copy static & public assets ke standalone folder
-  # (Next.js standalone output butuh ini)
+  # Step 3: Inject backend URL ke app.yaml
   - name: "bash"
     args:
       - "-c"
       - |
-          cp -r web-hrd/.next/static web-hrd/.next/standalone/.next/static
-          cp -r web-hrd/public web-hrd/.next/standalone/public
+        sed -i "s|REPLACE_WITH_BACKEND_URL|${_BACKEND_URL}|g" web-hrd/app.yaml
 
   # Step 4: Deploy ke App Engine
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -33,13 +27,15 @@ steps:
     args:
       - app
       - deploy
-      - web-hrd/frontend.yaml
+      - web-hrd/app.yaml
       - --quiet
       - --project=$PROJECT_ID
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
+includedFiles:
+  - "web-hrd/**"
+
 substitutions:
-  # Override saat trigger: --substitutions _BACKEND_URL=https://...
-  _BACKEND_URL: "https://presensi-backend-XXXX-as.a.run.app"
+  _BACKEND_URL: "https://presensi-backend-820401822458.asia-southeast2.run.app"
