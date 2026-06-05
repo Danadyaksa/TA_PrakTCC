@@ -77,9 +77,6 @@ export default function LoginPage() {
 
         {/* Logo & branding */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg mb-4">
-            <Building2 size={28} className="text-white" />
-          </div>
           <h1 className="text-2xl font-bold text-gray-900">PT Basikal Jaya</h1>
           <p className="text-sm text-gray-500 mt-1">Portal HRD — Sistem Kehadiran Karyawan</p>
         </div>
@@ -105,7 +102,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@perusahaan.com"
+                placeholder="hrd@perusahaan.com"
                 required
                 autoComplete="email"
                 value={email}
