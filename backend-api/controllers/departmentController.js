@@ -12,11 +12,11 @@ exports.getDepartments = async (req, res) => {
 
 // @desc    Create department
 exports.createDepartment = async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, basic_salary } = req.body;
   try {
     const result = await db.query(
-      'INSERT INTO departments (name, description) VALUES ($1, $2) RETURNING *',
-      [name, description]
+      'INSERT INTO departments (name, description, basic_salary) VALUES ($1, $2, $3) RETURNING *',
+      [name, description, basic_salary || 0]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -27,11 +27,11 @@ exports.createDepartment = async (req, res) => {
 // @desc    Update department
 exports.updateDepartment = async (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description, basic_salary } = req.body;
   try {
     const result = await db.query(
-      'UPDATE departments SET name = $1, description = $2 WHERE id = $3 RETURNING *',
-      [name, description, id]
+      'UPDATE departments SET name = $1, description = $2, basic_salary = $3 WHERE id = $4 RETURNING *',
+      [name, description, basic_salary || 0, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Not found' });
     res.json(result.rows[0]);

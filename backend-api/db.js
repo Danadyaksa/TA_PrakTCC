@@ -18,6 +18,11 @@ pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS face_url TEXT')
   .then(() => console.log('👤 Kolom face_url dipastikan ada di tabel users.'))
   .catch(err => console.error('⚠️ Gagal memverifikasi kolom face_url:', err));
 
+// Pastikan kolom basic_salary ada di tabel departments
+pool.query('ALTER TABLE departments ADD COLUMN IF NOT EXISTS basic_salary DECIMAL(15, 2) DEFAULT 0')
+  .then(() => console.log('🏢 Kolom basic_salary dipastikan ada di tabel departments.'))
+  .catch(err => console.error('⚠️ Gagal memverifikasi kolom basic_salary di tabel departments:', err));
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };

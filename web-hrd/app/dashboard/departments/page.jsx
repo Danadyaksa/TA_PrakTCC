@@ -35,8 +35,16 @@ export default function DepartmentsPage() {
   const [editingDept, setEditingDept] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", onConfirm: () => {} });
 
-  const [formData, setFormData] = useState({ name: "", description: "" });
-  const [editData, setEditData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: "", description: "", basic_salary: "0" });
+  const [editData, setEditData] = useState({ name: "", description: "", basic_salary: "0" });
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
 
   useEffect(() => {
     fetchData();
@@ -56,9 +64,12 @@ export default function DepartmentsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await departmentService.createDepartment(formData);
+      await departmentService.createDepartment({
+        ...formData,
+        basic_salary: parseFloat(formData.basic_salary || 0)
+      });
       setIsAddDialogOpen(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", basic_salary: "0" });
       fetchData();
     } catch (error) {
       showToast("Gagal menambah departemen", "error");
@@ -67,14 +78,21 @@ export default function DepartmentsPage() {
 
   const handleEditOpen = (dept) => {
     setEditingDept(dept);
-    setEditData({ name: dept.name, description: dept.description || "" });
+    setEditData({
+      name: dept.name,
+      description: dept.description || "",
+      basic_salary: dept.basic_salary?.toString() || "0"
+    });
     setIsEditDialogOpen(true);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await departmentService.updateDepartment(editingDept.id, editData);
+      await departmentService.updateDepartment(editingDept.id, {
+        ...editData,
+        basic_salary: parseFloat(editData.basic_salary || 0)
+      });
       setIsEditDialogOpen(false);
       setEditingDept(null);
       fetchData();
@@ -138,6 +156,16 @@ export default function DepartmentsPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Gaji Pokok Standar (Rp)</Label>
+                <Input
+                  type="number"
+                  placeholder="Contoh: 3500000"
+                  required
+                  value={formData.basic_salary}
+                  onChange={(e) => setFormData({ ...formData, basic_salary: e.target.value })}
+                />
+              </div>
               <DialogFooter className="pt-4">
                 <Button type="submit" className="w-full">Simpan</Button>
               </DialogFooter>
@@ -168,6 +196,15 @@ export default function DepartmentsPage() {
                 onChange={(e) => setEditData({ ...editData, description: e.target.value })}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Gaji Pokok Standar (Rp)</Label>
+              <Input
+                type="number"
+                required
+                value={editData.basic_salary}
+                onChange={(e) => setEditData({ ...editData, basic_salary: e.target.value })}
+              />
+            </div>
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Batal
@@ -185,17 +222,18 @@ export default function DepartmentsPage() {
               <TableHead className="w-[80px]">ID</TableHead>
               <TableHead>Nama Departemen</TableHead>
               <TableHead>Deskripsi</TableHead>
+              <TableHead>Gaji Pokok Standar</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10">Memuat data...</TableCell>
+                <TableCell colSpan={5} className="text-center py-10">Memuat data...</TableCell>
               </TableRow>
             ) : departments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={5} className="text-center py-10 text-gray-500">
                   Belum ada data departemen.
                 </TableCell>
               </TableRow>
@@ -205,6 +243,7 @@ export default function DepartmentsPage() {
                   <TableCell className="font-mono text-xs">#{dept.id}</TableCell>
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell className="text-gray-500">{dept.description || "-"}</TableCell>
+                  <TableCell className="font-medium text-primary">{formatCurrency(dept.basic_salary || 0)}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
                       variant="ghost"

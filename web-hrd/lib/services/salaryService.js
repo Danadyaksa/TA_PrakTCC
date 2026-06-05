@@ -9,8 +9,9 @@ const getHeaders = () => {
 };
 
 export const salaryService = {
-  getSalaries: async () => {
-    const response = await fetch(`${API_URL}/salaries`, {
+  getSalaries: async (filters = {}) => {
+    const params = new URLSearchParams(filters).toString();
+    const response = await fetch(`${API_URL}/salaries?${params}`, {
       headers: getHeaders(),
     });
     return response.json();
