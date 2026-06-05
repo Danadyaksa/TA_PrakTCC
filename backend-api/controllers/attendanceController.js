@@ -36,8 +36,10 @@ exports.checkIn = async (req, res) => {
     const schedule = scheduleResult.rows[0];
 
     // 2. Calculate Late Minutes
-    const now = new Date();
-    const shiftStart = new Date(now.toDateString() + ' ' + schedule.shift_start);
+    const nowJakartaStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
+    const now = new Date(nowJakartaStr);
+    const datePart = nowJakartaStr.split(',')[0];
+    const shiftStart = new Date(datePart + ' ' + schedule.shift_start);
     let lateMinutes = 0;
     let status = 'hadir';
 
