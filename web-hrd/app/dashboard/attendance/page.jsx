@@ -21,6 +21,29 @@ import { CalendarDays, X, BarChart2 } from "lucide-react";
 
 export default function AttendancePage() {
   const [attendances, setAttendances] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedAttendances = [...attendances].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
   const [loading, setLoading] = useState(true);
   const [holidayInfo, setHolidayInfo] = useState({ isHoliday: false, name: "" });
   // Default: hari ini
@@ -136,11 +159,11 @@ export default function AttendancePage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead>Nama Karyawan</TableHead>
-              <TableHead>Waktu Masuk</TableHead>
-              <TableHead>Waktu Keluar</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Keterangan</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("user_name")}>Nama Karyawan</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("check_in")}>Waktu Masuk</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("check_out")}>Waktu Keluar</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("status")}>Status</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("late_minutes")}>Keterangan</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -157,7 +180,7 @@ export default function AttendancePage() {
                 </TableCell>
               </TableRow>
             ) : (
-              attendances.map((att) => (
+              sortedAttendances.map((att) => (
                 <TableRow key={att.id}>
                   <TableCell className="font-medium">{att.user_name}</TableCell>
                   <TableCell>

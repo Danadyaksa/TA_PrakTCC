@@ -46,6 +46,29 @@ const YEARS = Array.from({ length: 5 }, (_, i) => String(currentYear - i));
 export default function LeavesPage() {
   const { showToast, ToastComponent } = useToast();
   const [leaves, setLeaves] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedLeaves = [...leaves].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
   const [loading, setLoading] = useState(true);
 
   // Filter state — default bulan & tahun sekarang
@@ -134,11 +157,11 @@ export default function LeavesPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead>Karyawan</TableHead>
-              <TableHead>Tipe</TableHead>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Alasan</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("user_name")}>Karyawan</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("type")}>Tipe</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("start_date")}>Tanggal</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("reason")}>Alasan</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("status")}>Status</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -156,7 +179,7 @@ export default function LeavesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              leaves.map((leave) => (
+              sortedLeaves.map((leave) => (
                 <TableRow key={leave.id}>
                   <TableCell className="font-medium">{leave.user_name}</TableCell>
                   <TableCell>

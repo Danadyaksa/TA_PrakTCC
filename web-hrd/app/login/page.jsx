@@ -80,7 +80,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg mb-4">
             <Building2 size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">PresensiApp</h1>
+          <h1 className="text-2xl font-bold text-gray-900">PT Basikal Jaya</h1>
           <p className="text-sm text-gray-500 mt-1">Portal HRD — Sistem Kehadiran Karyawan</p>
         </div>
 

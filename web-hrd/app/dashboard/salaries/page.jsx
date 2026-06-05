@@ -32,6 +32,7 @@ export default function SalariesPage() {
 
   // Local inputs state for editing allowances and deductions
   const [inputs, setInputs] = useState({}); // { [user_id]: { allowances: string, deductions: string } }
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("id-ID", {
@@ -84,6 +85,43 @@ export default function SalariesPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedSalaries = [...salaries].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA, valB;
+    if (sortConfig.key === "allowances") {
+      valA = parseFloat(inputs[a.user_id]?.allowances || 0);
+      valB = parseFloat(inputs[b.user_id]?.allowances || 0);
+    } else if (sortConfig.key === "deductions") {
+      valA = parseFloat(inputs[a.user_id]?.deductions || 0);
+      valB = parseFloat(inputs[b.user_id]?.deductions || 0);
+    } else if (sortConfig.key === "net_salary") {
+      valA = a.basic_salary + parseFloat(inputs[a.user_id]?.allowances || 0) - parseFloat(inputs[a.user_id]?.deductions || 0);
+      valB = b.basic_salary + parseFloat(inputs[b.user_id]?.allowances || 0) - parseFloat(inputs[b.user_id]?.deductions || 0);
+    } else if (sortConfig.key === "hadir") {
+      valA = a.attendance_summary?.hadir || 0;
+      valB = b.attendance_summary?.hadir || 0;
+    } else {
+      valA = a[sortConfig.key];
+      valB = b[sortConfig.key];
+    }
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
 
   // Handle local change in inputs
   const handleInputChange = (userId, field, value) => {
@@ -348,7 +386,7 @@ export default function SalariesPage() {
 
     try {
       const { default: jsPDF } = await import("jspdf");
-      await import("jspdf-autotable");
+      const { default: autoTable } = await import("jspdf-autotable");
 
       const doc = new jsPDF({
         orientation: "portrait",
@@ -371,14 +409,14 @@ export default function SalariesPage() {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text("PT DANADYAKSA KARYA UTAMA", 15, y);
+      doc.text("PT BASIKAL JAYA", 15, y);
       
       y += 6;
       doc.setFont("Helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
       doc.text("Gedung Rektorat Lt. 3, Jl. Raya Kampus, Sleman, Yogyakarta", 15, y);
-      doc.text("Email: hrd@danadyaksa.co.id | Telp: (0274) 555-1234", 15, y + 4);
+      doc.text("Email: hrd@basikaljaya.co.id | Telp: (0274) 555-1234", 15, y + 4);
 
       y += 10;
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -445,7 +483,7 @@ export default function SalariesPage() {
         ["3", "Potongan Gaji / Absen", "Potongan", formatCurrencyPDF(deduction)]
       ];
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: y,
         head: [["No", "Deskripsi", "Kategori", "Jumlah"]],
         body: tableData,
@@ -611,13 +649,13 @@ export default function SalariesPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead className="font-semibold text-xs">Karyawan</TableHead>
-              <TableHead className="font-semibold text-xs">Departemen</TableHead>
-              <TableHead className="font-semibold text-xs">Kehadiran (Bulan Ini)</TableHead>
-              <TableHead className="font-semibold text-xs">Gaji Pokok</TableHead>
-              <TableHead className="font-semibold text-xs w-[130px]">Tunjangan (Rp)</TableHead>
-              <TableHead className="font-semibold text-xs w-[130px]">Potongan (Rp)</TableHead>
-              <TableHead className="font-semibold text-xs text-right">Total Bersih</TableHead>
+              <TableHead className="font-semibold text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("user_name")}>Karyawan</TableHead>
+              <TableHead className="font-semibold text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("department_name")}>Departemen</TableHead>
+              <TableHead className="font-semibold text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("hadir")}>Kehadiran (Bulan Ini)</TableHead>
+              <TableHead className="font-semibold text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("basic_salary")}>Gaji Pokok</TableHead>
+              <TableHead className="font-semibold text-xs w-[130px] cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("allowances")}>Tunjangan (Rp)</TableHead>
+              <TableHead className="font-semibold text-xs w-[130px] cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("deductions")}>Potongan (Rp)</TableHead>
+              <TableHead className="font-semibold text-xs text-right cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("net_salary")}>Total Bersih</TableHead>
               <TableHead className="font-semibold text-xs text-center w-[150px]">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -635,7 +673,7 @@ export default function SalariesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              salaries.map((item) => {
+              sortedSalaries.map((item) => {
                 const userInputs = inputs[item.user_id] || { allowances: "0", deductions: "0" };
                 const rawAllowances = parseFloat(userInputs.allowances || 0);
                 const rawDeductions = parseFloat(userInputs.deductions || 0);

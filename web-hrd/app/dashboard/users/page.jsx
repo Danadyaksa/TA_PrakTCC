@@ -37,6 +37,35 @@ import { useToast } from "@/components/ui/toast-notification";
 export default function UsersPage() {
   const { showToast, ToastComponent } = useToast();
   const [users, setUsers] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA, valB;
+    if (sortConfig.key === "face_url") {
+      valA = a.face_url ? 1 : 0;
+      valB = b.face_url ? 1 : 0;
+    } else {
+      valA = a[sortConfig.key];
+      valB = b[sortConfig.key];
+    }
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -363,11 +392,10 @@ export default function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead>Nama</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Departemen</TableHead>
-              <TableHead>Status Wajah</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("name")}>Nama</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("email")}>Email</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("department_name")}>Departemen</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("face_url")}>Status Wajah</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -385,9 +413,8 @@ export default function UsersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              sortedUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-mono text-xs">#{user.id}</TableCell>
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell className="text-gray-500">{user.email}</TableCell>
                   <TableCell>

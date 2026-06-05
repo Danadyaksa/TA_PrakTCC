@@ -29,6 +29,29 @@ import { useToast } from "@/components/ui/toast-notification";
 export default function DepartmentsPage() {
   const { showToast, ToastComponent } = useToast();
   const [departments, setDepartments] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedDepartments = [...departments].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -219,28 +242,26 @@ export default function DepartmentsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead>Nama Departemen</TableHead>
-              <TableHead>Deskripsi</TableHead>
-              <TableHead>Gaji Pokok Standar</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("name")}>Nama Departemen</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("description")}>Deskripsi</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("basic_salary")}>Gaji Pokok Standar</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">Memuat data...</TableCell>
+                <TableCell colSpan={4} className="text-center py-10">Memuat data...</TableCell>
               </TableRow>
             ) : departments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={4} className="text-center py-10 text-gray-500">
                   Belum ada data departemen.
                 </TableCell>
               </TableRow>
             ) : (
-              departments.map((dept) => (
+              sortedDepartments.map((dept) => (
                 <TableRow key={dept.id}>
-                  <TableCell className="font-mono text-xs">#{dept.id}</TableCell>
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell className="text-gray-500">{dept.description || "-"}</TableCell>
                   <TableCell className="font-medium text-primary">{formatCurrency(dept.basic_salary || 0)}</TableCell>

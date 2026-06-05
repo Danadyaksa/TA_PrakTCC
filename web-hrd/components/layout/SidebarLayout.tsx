@@ -132,7 +132,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         <div className="flex flex-col h-full">
           {/* Logo / Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b">
-            {!isCollapsed && <span className="text-xl font-bold text-primary">PresensiApp</span>}
+            {!isCollapsed && <span className="text-xl font-bold text-primary">PT Basikal Jaya</span>}
             <Button 
               variant="ghost" 
               size="icon" 

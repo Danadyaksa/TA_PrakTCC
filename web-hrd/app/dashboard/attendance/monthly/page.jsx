@@ -42,6 +42,31 @@ const STATUS_STYLE = {
 export default function MonthlyAttendancePage() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
+  const [daySortConfig, setDaySortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleDaySort = (key) => {
+    setDaySortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const getSortedDays = (days) => {
+    if (!daySortConfig.key) return days;
+    return [...days].sort((a, b) => {
+      let valA = a[daySortConfig.key];
+      let valB = b[daySortConfig.key];
+      if (valA === undefined || valA === null) valA = "";
+      if (valB === undefined || valB === null) valB = "";
+      if (typeof valA === "string") valA = valA.toLowerCase();
+      if (typeof valB === "string") valB = valB.toLowerCase();
+      if (valA < valB) return daySortConfig.direction === "asc" ? -1 : 1;
+      if (valA > valB) return daySortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
   const [year, setYear]   = useState(now.getFullYear());
   const [userId, setUserId] = useState("");
   const [users, setUsers]   = useState([]);
@@ -219,16 +244,16 @@ export default function MonthlyAttendancePage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-gray-50/70">
-                        <TableHead className="text-xs">Tanggal</TableHead>
-                        <TableHead className="text-xs">Shift</TableHead>
-                        <TableHead className="text-xs">Check In</TableHead>
-                        <TableHead className="text-xs">Check Out</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                        <TableHead className="text-xs">Keterangan</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("date")}>Tanggal</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("shift_start")}>Shift</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("check_in")}>Check In</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("check_out")}>Check Out</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("status")}>Status</TableHead>
+                        <TableHead className="text-xs cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleDaySort("late_minutes")}>Keterangan</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {emp.days.map((day) => (
+                      {getSortedDays(emp.days).map((day) => (
                         <TableRow
                           key={day.date}
                           className={cn(

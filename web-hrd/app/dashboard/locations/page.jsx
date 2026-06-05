@@ -36,6 +36,29 @@ const MapPicker = dynamic(() => import("@/components/layout/MapPicker"), {
 export default function LocationsPage() {
   const { showToast, ToastComponent } = useToast();
   const [locations, setLocations] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedLocations = [...locations].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+    if (typeof valA === "string") valA = valA.toLowerCase();
+    if (typeof valB === "string") valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -209,9 +232,9 @@ export default function LocationsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
-              <TableHead>Nama Lokasi</TableHead>
-              <TableHead>Koordinat</TableHead>
-              <TableHead>Radius</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("name")}>Nama Lokasi</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("latitude")}>Koordinat</TableHead>
+              <TableHead className="cursor-pointer select-none hover:bg-gray-100/50" onDoubleClick={() => handleSort("radius_meters")}>Radius</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -225,7 +248,7 @@ export default function LocationsPage() {
                 <TableCell colSpan={4} className="text-center py-10 text-gray-500">Belum ada data lokasi.</TableCell>
               </TableRow>
             ) : (
-          locations.map((loc) => (
+              sortedLocations.map((loc) => (
                 <TableRow key={loc.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center">
