@@ -23,6 +23,17 @@ pool.query('ALTER TABLE departments ADD COLUMN IF NOT EXISTS basic_salary DECIMA
   .then(() => console.log('🏢 Kolom basic_salary dipastikan ada di tabel departments.'))
   .catch(err => console.error('⚠️ Gagal memverifikasi kolom basic_salary di tabel departments:', err));
 
+// Pastikan tabel holidays ada di database
+pool.query(`
+  CREATE TABLE IF NOT EXISTS holidays (
+    id SERIAL PRIMARY KEY,
+    holiday_date DATE UNIQUE NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`).then(() => console.log('📅 Tabel holidays dipastikan ada di database.'))
+  .catch(err => console.error('⚠️ Gagal membuat tabel holidays:', err));
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };

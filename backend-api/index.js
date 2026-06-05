@@ -16,6 +16,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const leaveRoutes = require('./routes/leaveRoutes');
 const salaryRoutes = require('./routes/salaryRoutes');
 const logRoutes = require('./routes/logRoutes');
+const holidayRoutes = require('./routes/holidayRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/salaries', salaryRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/holidays', holidayRoutes);
 
 // Test Route
 app.get('/', (req, res) => {

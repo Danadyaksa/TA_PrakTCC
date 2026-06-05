@@ -1,3 +1,4 @@
+const db = require('../db');
 const holidaysCache = {}; // Key: YYYY-MM (e.g., '2026-06'), Value: Map of 'YYYY-MM-DD' -> description
 
 /**
@@ -12,38 +13,51 @@ const getHolidaysMap = async (year, month) => {
     return holidaysCache[cacheKey];
   }
 
+  const holidaysMap = new Map();
+
   try {
     console.log(`[Holiday Service] Fetching holidays from API for ${cacheKey}...`);
     
-    // Call the Indonesian holiday API (supports year and month parameters)
+    // 1. Call the Indonesian holiday API (supports year and month parameters)
     const url = `https://api-hari-libur.vercel.app/api?year=${year}&month=${month}`;
     const response = await fetch(url);
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.ok) {
+      const result = await response.json();
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        result.data.forEach(item => {
+          if (item.date && item.description) {
+            // Format of item.date is 'YYYY-MM-DD'
+            holidaysMap.set(item.date, item.description);
+          }
+        });
+      }
     }
-    
-    const result = await response.json();
-    const holidaysMap = new Map();
-    
-    if (result.status === 'success' && Array.isArray(result.data)) {
-      result.data.forEach(item => {
-        if (item.date && item.description) {
-          // Format of item.date is 'YYYY-MM-DD'
-          holidaysMap.set(item.date, item.description);
-        }
-      });
-    }
-    
-    // Store in cache
-    holidaysCache[cacheKey] = holidaysMap;
-    console.log(`[Holiday Service] Cached ${holidaysMap.size} holidays for ${cacheKey}`);
-    return holidaysMap;
   } catch (error) {
-    console.error(`[Holiday Service] Failed to fetch holidays for ${cacheKey}:`, error);
-    // Return empty map on failure to avoid crashing the server
-    return new Map();
+    console.error(`[Holiday Service] Failed to fetch holidays from API for ${cacheKey}:`, error);
   }
+
+  try {
+    // 2. Fetch custom holidays from PostgreSQL database for the target year and month
+    const dbHolidays = await db.query(
+      `SELECT holiday_date, description FROM holidays 
+       WHERE EXTRACT(YEAR FROM holiday_date) = $1 
+         AND EXTRACT(MONTH FROM holiday_date) = $2`,
+      [year, month]
+    );
+
+    for (const h of dbHolidays.rows) {
+      const dateStr = new Date(h.holiday_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+      holidaysMap.set(dateStr, h.description);
+    }
+  } catch (error) {
+    console.error(`[Holiday Service] Failed to fetch custom holidays from DB for ${cacheKey}:`, error);
+  }
+
+  // Store in cache
+  holidaysCache[cacheKey] = holidaysMap;
+  console.log(`[Holiday Service] Cached ${holidaysMap.size} holidays (including custom) for ${cacheKey}`);
+  return holidaysMap;
 };
 
 /**
@@ -67,7 +81,18 @@ const checkHoliday = async (dateString) => {
   return { isHoliday, description };
 };
 
+/**
+ * Clear the holidays cache when data changes.
+ */
+const clearHolidaysCache = () => {
+  for (const key in holidaysCache) {
+    delete holidaysCache[key];
+  }
+  console.log('[Holiday Service] Holidays cache cleared.');
+};
+
 module.exports = {
   getHolidaysMap,
-  checkHoliday
+  checkHoliday,
+  clearHolidaysCache
 };
