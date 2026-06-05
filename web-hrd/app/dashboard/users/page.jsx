@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { Pencil, Trash2, UserPlus, Camera } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-notification";
 
@@ -44,6 +44,41 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", onConfirm: () => {} });
+
+  const [isFaceDialogOpen, setIsFaceDialogOpen] = useState(false);
+  const [faceUser, setFaceUser] = useState(null);
+  const [faceFile, setFaceFile] = useState(null);
+  const [facePreview, setFacePreview] = useState(null);
+  const [faceLoading, setFaceLoading] = useState(false);
+
+  const handleFaceOpen = (user) => {
+    setFaceUser(user);
+    setFaceFile(null);
+    setFacePreview(user.face_url || null);
+    setIsFaceDialogOpen(true);
+  };
+
+  const handleFaceSubmit = async (e) => {
+    e.preventDefault();
+    if (!faceFile) {
+      showToast("Harap pilih file foto wajah terlebih dahulu", "error");
+      return;
+    }
+    setFaceLoading(true);
+    try {
+      await userService.uploadFace(faceUser.id, faceFile);
+      showToast("Wajah berhasil didaftarkan!", "success");
+      setIsFaceDialogOpen(false);
+      setFaceFile(null);
+      setFacePreview(null);
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      showToast("Gagal mendaftarkan wajah", "error");
+    } finally {
+      setFaceLoading(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -262,6 +297,68 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog Pendaftaran Wajah */}
+      <Dialog open={isFaceDialogOpen} onOpenChange={setIsFaceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pendaftaran Wajah - {faceUser?.name}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleFaceSubmit} className="space-y-4 py-4">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition-colors">
+              {facePreview ? (
+                <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg">
+                  <img
+                    src={facePreview}
+                    alt="Face Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-gray-400">
+                  <Camera size={48} className="mb-2" />
+                  <span className="text-sm">Belum ada foto referensi wajah</span>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                id="face-upload-input"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setFaceFile(file);
+                    setFacePreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+              <label
+                htmlFor="face-upload-input"
+                className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md cursor-pointer text-sm font-medium transition-colors"
+              >
+                Pilih Foto Wajah
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Unggah foto wajah karyawan yang jelas (tampak depan, pencahayaan baik, tanpa masker/kacamata hitam).
+            </p>
+            <DialogFooter className="pt-4 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsFaceDialogOpen(false)}
+                disabled={faceLoading}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={faceLoading || !faceFile}>
+                {faceLoading ? "Mengunggah..." : "Daftarkan Wajah"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
@@ -270,6 +367,7 @@ export default function UsersPage() {
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Departemen</TableHead>
+              <TableHead>Status Wajah</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -297,7 +395,27 @@ export default function UsersPage() {
                       {user.department_name || "-"}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    {user.face_url ? (
+                      <span className="px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-medium">
+                        Terdaftar
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded text-xs font-medium">
+                        Belum Terdaftar
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                      onClick={() => handleFaceOpen(user)}
+                      title="Daftarkan Wajah"
+                    >
+                      <Camera size={16} />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

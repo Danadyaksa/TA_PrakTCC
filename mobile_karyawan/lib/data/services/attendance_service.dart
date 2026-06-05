@@ -30,12 +30,28 @@ class AttendanceService {
   }
 
   Future<Map<String, dynamic>> checkIn(Map<String, dynamic> data) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/attendance/check-in'),
-      headers: await _getHeaders(),
-      body: jsonEncode(data),
-    );
+    final uri = Uri.parse('$_baseUrl/attendance/check-in');
+    final token = await _authService.getToken();
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['schedule_id'] = data['schedule_id']?.toString() ?? '';
+    request.fields['latitude'] = data['latitude']?.toString() ?? '0.0';
+    request.fields['longitude'] = data['longitude']?.toString() ?? '0.0';
+    request.fields['liveness_score'] = data['liveness_score']?.toString() ?? '0.0';
+
+    if (data['selfie_url'] != null && data['selfie_url'].isNotEmpty) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'selfie',
+        data['selfie_url'],
+      ));
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
     final body = jsonDecode(response.body);
+    
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(body['message'] ?? 'Check-in gagal');
     }
@@ -43,15 +59,32 @@ class AttendanceService {
   }
 
   Future<Map<String, dynamic>> checkOut(int attendanceId, Map<String, dynamic> data) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/attendance/check-out'),
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'attendance_id': attendanceId,
-        ...data,
-      }),
-    );
-    return jsonDecode(response.body);
+    final uri = Uri.parse('$_baseUrl/attendance/check-out');
+    final token = await _authService.getToken();
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['attendance_id'] = attendanceId.toString();
+    request.fields['latitude'] = data['latitude']?.toString() ?? '0.0';
+    request.fields['longitude'] = data['longitude']?.toString() ?? '0.0';
+    request.fields['liveness_score'] = data['liveness_score']?.toString() ?? '0.0';
+
+    if (data['selfie_url'] != null && data['selfie_url'].isNotEmpty) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'selfie',
+        data['selfie_url'],
+      ));
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final body = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(body['message'] ?? 'Check-out gagal');
+    }
+    return body;
   }
 
   /// HRD: daily summary — semua karyawan berjadwal pada tanggal tertentu

@@ -13,6 +13,11 @@ pool.on('connect', () => {
   console.log('🐘 PostgreSQL Connected!');
 });
 
+// Pastikan kolom face_url ada di tabel users
+pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS face_url TEXT')
+  .then(() => console.log('👤 Kolom face_url dipastikan ada di tabel users.'))
+  .catch(err => console.error('⚠️ Gagal memverifikasi kolom face_url:', err));
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };

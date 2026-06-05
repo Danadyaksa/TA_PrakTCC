@@ -1,11 +1,12 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const { uploadToStorage } = require('../utils/storageHelper');
 
 // @desc    Get all users (employees)
 exports.getUsers = async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT u.id, u.name, u.email, u.role, u.department_id, d.name as department_name FROM users u LEFT JOIN departments d ON u.department_id = d.id ORDER BY u.name ASC'
+      'SELECT u.id, u.name, u.email, u.role, u.department_id, u.face_url, d.name as department_name FROM users u LEFT JOIN departments d ON u.department_id = d.id ORDER BY u.name ASC'
     );
     res.json(result.rows);
   } catch (err) {
@@ -57,5 +58,41 @@ exports.deleteUser = async (req, res) => {
     res.json({ message: 'User deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Register / update user face reference photo
+exports.registerFace = async (req, res) => {
+  const { id } = req.params;
+  
+  if (!req.file) {
+    return res.status(400).json({ message: 'Harap lampirkan file gambar wajah (face_image).' });
+  }
+
+  try {
+    // 1. Check if user exists
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    // 2. Upload to Firebase Storage
+    const timestamp = Date.now();
+    const ext = req.file.originalname.split('.').pop() || 'jpg';
+    const destPath = `faces/user_${id}_${timestamp}.${ext}`;
+    
+    console.log(`[User Controller] Uploading face photo for user ${id} to Firebase Storage...`);
+    const faceUrl = await uploadToStorage(req.file.buffer, destPath, req.file.mimetype);
+
+    // 3. Update PostgreSQL
+    await db.query('UPDATE users SET face_url = $1 WHERE id = $2', [faceUrl, id]);
+
+    res.json({
+      message: 'Foto referensi wajah berhasil didaftarkan!',
+      face_url: faceUrl
+    });
+  } catch (err) {
+    console.error('[User Controller] Error registering face:', err);
+    res.status(500).json({ message: 'Server Error saat mendaftarkan wajah' });
   }
 };

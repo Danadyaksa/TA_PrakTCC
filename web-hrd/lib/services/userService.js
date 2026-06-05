@@ -38,4 +38,17 @@ export const userService = {
     });
     return response.json();
   },
+  uploadFace: async (id, file) => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("face", file);
+    const response = await fetch(`${API_URL}/users/${id}/face`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    return response.json();
+  },
 };

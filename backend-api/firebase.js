@@ -18,7 +18,8 @@ if (process.env.FIREBASE_CONFIG) {
 }
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (serviceAccount ? `${serviceAccount.project_id}.appspot.com` : undefined)
 });
 
 const db = admin.firestore();

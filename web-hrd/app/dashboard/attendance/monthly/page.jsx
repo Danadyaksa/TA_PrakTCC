@@ -36,6 +36,7 @@ const STATUS_STYLE = {
   izin:      "bg-blue-100 text-blue-700",
   sakit:     "bg-purple-100 text-purple-700",
   upcoming:  "bg-gray-100 text-gray-400",
+  libur:     "bg-gray-200 text-gray-600",
 };
 
 export default function MonthlyAttendancePage() {
@@ -194,6 +195,13 @@ export default function MonthlyAttendancePage() {
                     value={emp.summary.izin_sakit}
                     className="bg-blue-100 text-blue-700"
                   />
+                  {emp.summary.libur > 0 && (
+                    <StatBadge
+                      label="Libur"
+                      value={emp.summary.libur}
+                      className="bg-gray-100 text-gray-600"
+                    />
+                  )}
                   <span className="text-xs text-gray-400 ml-2">
                     {emp.summary.total_work_days} hari kerja
                   </span>
@@ -225,6 +233,7 @@ export default function MonthlyAttendancePage() {
                           key={day.date}
                           className={cn(
                             day.status === "alpha" && "bg-red-50/40",
+                            day.status === "libur" && "bg-gray-50/30 text-gray-400",
                             day.status === "upcoming" && "opacity-50"
                           )}
                         >
@@ -259,6 +268,8 @@ export default function MonthlyAttendancePage() {
                               ? `Telat ${day.late_minutes} mnt`
                               : day.status === "alpha"
                               ? "Tidak hadir"
+                              : day.status === "libur"
+                              ? (day.holiday_name || "Hari Libur Nasional")
                               : "—"}
                           </TableCell>
                         </TableRow>
