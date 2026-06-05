@@ -1,37 +1,42 @@
-const admin = require('firebase-admin');
-
 /**
- * Upload a file buffer to Firebase Storage and return its public URL.
+ * Upload a file buffer to Imgbb and return its public URL.
  * @param {Buffer} fileBuffer 
- * @param {string} destPath - e.g., 'selfies/user_1_12345.jpg'
- * @param {string} mimeType - e.g., 'image/jpeg'
+ * @param {string} destPath - Ignored in Imgbb, kept for signature compatibility
+ * @param {string} mimeType - Ignored in Imgbb, kept for signature compatibility
  * @returns {Promise<string>} Public HTTPS URL of the uploaded file
  */
 const uploadToStorage = async (fileBuffer, destPath, mimeType) => {
   try {
-    const bucket = admin.storage().bucket();
-    if (!bucket) {
-      throw new Error('Firebase Storage bucket not configured. Check storageBucket settings.');
-    }
+    const apiKey = process.env.IMGBB_API_KEY || '9a7b317f28e59c3a79b08fadd336a078';
+    const base64Image = fileBuffer.toString('base64');
+
+    console.log(`[Storage Helper] Uploading file to Imgbb...`);
     
-    const file = bucket.file(destPath);
-    
-    // Save buffer
-    await file.save(fileBuffer, {
-      metadata: {
-        contentType: mimeType,
-        cacheControl: 'public, max-age=31536000',
+    const body = new URLSearchParams();
+    body.append('image', base64Image);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
+      body: body.toString()
     });
-    
-    // Make public so that external APIs (like Azure Face) can read the image
-    await file.makePublic();
-    
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-    console.log(`[Storage Helper] Successfully uploaded and made public: ${publicUrl}`);
-    return publicUrl;
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Imgbb upload failed with status ${response.status}: ${errorBody}`);
+    }
+
+    const result = await response.json();
+    if (result && result.data && result.data.url) {
+      console.log(`[Storage Helper] Successfully uploaded to Imgbb: ${result.data.url}`);
+      return result.data.url;
+    } else {
+      throw new Error(result.error ? result.error.message : 'Unknown Imgbb upload error');
+    }
   } catch (error) {
-    console.error('[Storage Helper] Error uploading to storage:', error);
+    console.error('[Storage Helper] Error uploading to Imgbb:', error);
     throw error;
   }
 };
