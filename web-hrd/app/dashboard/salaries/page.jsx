@@ -415,8 +415,8 @@ export default function SalariesPage() {
       doc.setFont("Helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-      doc.text("Gedung Rektorat Lt. 3, Jl. Raya Kampus, Sleman, Yogyakarta", 15, y);
-      doc.text("Email: hrd@basikaljaya.co.id | Telp: (0274) 555-1234", 15, y + 4);
+      doc.text("Green Park Apartment Lantai 8, Jl. Baladewa, Depok, Sleman, Yogyakarta 55281", 15, y);
+      doc.text("Email: hrd@perusahaan.com | Telp: (0281) 1234-5678", 15, y + 4);
 
       y += 10;
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -518,7 +518,7 @@ export default function SalariesPage() {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-      doc.text("TOTAL BERSIH (TAKE HOME PAY)", 120, y + 6);
+      doc.text("TOTAL BERSIH", 120, y + 6);
       
       doc.setFontSize(12);
       doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
@@ -560,7 +560,7 @@ export default function SalariesPage() {
       doc.text("Disetujui oleh,", 130, y + 5);
       
       doc.setFont("Helvetica", "bold");
-      doc.text("HRD Department", 130, y + 25);
+      doc.text("HRD PT Basikal Jaya", 130, y + 25);
       
       doc.setFont("Helvetica", "italic");
       doc.setFontSize(8);
