@@ -59,7 +59,7 @@ exports.initDepartmentSchedule = async (req, res) => {
     }
 
     // Buat Senin-Jumat (1-5)
-    for (let day = 1; day <= 5; day++) {
+    for (let day = 1; day <= 6; day++) {
       await db.query(
         'INSERT INTO schedules (department_id, day_of_week, shift_start, shift_end) VALUES ($1, $2, $3, $4)',
         [department_id, day, '08:00:00', '16:00:00']

@@ -49,13 +49,12 @@ class ScheduleService {
     }
   }
 
-  /// Get jadwal hari ini
-  /// DateTime.weekday: 1=Senin, 2=Selasa, ..., 5=Jumat, 6=Sabtu, 7=Minggu
-  /// DB day_of_week: 1=Senin ... 5=Jumat (sama persis, tidak perlu konversi)
+  /// DateTime.weekday: 1=Senin, 2=Selasa, ..., 6=Sabtu, 7=Minggu
+  /// DB day_of_week: 1=Senin ... 6=Sabtu (sama persis, tidak perlu konversi)
   Future<Schedule?> getTodaySchedule() async {
     final today = DateTime.now().weekday; // 1=Senin, ..., 7=Minggu
-    // Sabtu (6) dan Minggu (7) tidak ada jadwal
-    if (today >= 6) return null;
+    // Minggu (7) tidak ada jadwal
+    if (today >= 7) return null;
     return await getScheduleByDay(today);
   }
 }

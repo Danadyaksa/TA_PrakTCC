@@ -31,7 +31,9 @@ const DAYS = [
   { value: 3, label: "Rabu" },
   { value: 4, label: "Kamis" },
   { value: 5, label: "Jumat" },
+  { value: 6, label: "Sabtu" }, 
 ];
+
 
 export default function SchedulesPage() {
   const { showToast, ToastComponent } = useToast();
@@ -127,7 +129,7 @@ export default function SchedulesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Jadwal Kerja</h1>
-          <p className="text-gray-500">Atur jam kerja per departemen. Berlaku Senin – Jumat.</p>
+          <p className="text-gray-500">Atur jam kerja per departemen. Berlaku Senin – Sabtu.</p>
         </div>
       </div>
 
@@ -222,7 +224,7 @@ export default function SchedulesPage() {
             <div className="px-6 py-12 text-center text-sm text-gray-400">
               Departemen <span className="font-medium text-gray-600">{selectedDept?.name}</span> belum
               punya jadwal. Klik <span className="font-medium">"Buat Jadwal Default"</span> untuk
-              membuat jadwal Senin–Jumat (08:00 – 16:00).
+              membuat jadwal Senin–Sabtu (08:00 – 16:00).
             </div>
           ) : (
             <div className="divide-y">
