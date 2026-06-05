@@ -74,7 +74,7 @@ export default function UsersPage() {
       fetchData();
     } catch (error) {
       console.error(error);
-      showToast("Gagal mendaftarkan wajah", "error");
+      showToast(error.message || "Gagal mendaftarkan wajah", "error");
     } finally {
       setFaceLoading(false);
     }

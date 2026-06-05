@@ -49,6 +49,10 @@ export const userService = {
       },
       body: formData,
     });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || "Gagal mendaftarkan wajah");
+    }
     return response.json();
   },
 };
