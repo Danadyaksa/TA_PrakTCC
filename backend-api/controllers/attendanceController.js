@@ -199,13 +199,13 @@ exports.getHistory = async (req, res) => {
       query += ' WHERE a.user_id = $1';
       params.push(req.user.id);
       if (date) {
-        query += ' AND DATE(a.check_in AT TIME ZONE \'Asia/Jakarta\') = $2';
+        query += ' AND DATE((a.check_in AT TIME ZONE \'UTC\') AT TIME ZONE \'Asia/Jakarta\') = $2';
         params.push(date);
       }
     } else {
       // HRD bisa filter by date
       if (date) {
-        query += ' WHERE DATE(a.check_in AT TIME ZONE \'Asia/Jakarta\') = $1';
+        query += ' WHERE DATE((a.check_in AT TIME ZONE \'UTC\') AT TIME ZONE \'Asia/Jakarta\') = $1';
         params.push(date);
       }
     }
@@ -267,7 +267,7 @@ exports.getDailySummary = async (req, res) => {
       LEFT JOIN attendances a
         ON a.user_id = u.id
         AND a.schedule_id = s.id
-        AND DATE(a.check_in AT TIME ZONE 'Asia/Jakarta') = $2
+        AND DATE((a.check_in AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Jakarta') = $2
       WHERE u.role = 'karyawan'
       ORDER BY u.name ASC
     `, [dayOfWeek, dateStr]);
@@ -382,7 +382,7 @@ exports.getMonthlySummary = async (req, res) => {
         `SELECT a.*
          FROM attendances a
          WHERE a.user_id = $1
-           AND DATE(a.check_in AT TIME ZONE 'Asia/Jakarta') BETWEEN $2 AND $3
+           AND DATE((a.check_in AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Jakarta') BETWEEN $2 AND $3
          ORDER BY a.check_in ASC`,
         [user.id, startDate, endDate]
       );
