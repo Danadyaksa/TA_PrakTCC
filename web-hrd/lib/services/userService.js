@@ -41,7 +41,7 @@ export const userService = {
   uploadFace: async (id, file) => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
-    formData.append("face", file);
+    formData.append("face_image", file);
     const response = await fetch(`${API_URL}/users/${id}/face`, {
       method: "PUT",
       headers: {
