@@ -41,4 +41,10 @@ export const attendanceService = {
     });
     return response.json();
   },
+  getDailySummary: async (date) => {
+    let url = `${API_URL}/attendance/daily-summary`;
+    if (date) url += `?date=${date}`;
+    const response = await fetch(url, { headers: getHeaders() });
+    return response.json();
+  },
 };

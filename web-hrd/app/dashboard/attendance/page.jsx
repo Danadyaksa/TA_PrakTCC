@@ -22,6 +22,7 @@ import { CalendarDays, X, BarChart2 } from "lucide-react";
 export default function AttendancePage() {
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [holidayInfo, setHolidayInfo] = useState({ isHoliday: false, name: "" });
   // Default: hari ini
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -33,8 +34,16 @@ export default function AttendancePage() {
   const fetchData = async (date) => {
     setLoading(true);
     try {
-      const data = await attendanceService.getHistory(date);
-      setAttendances(Array.isArray(data) ? data : []);
+      const [historyData, summaryData] = await Promise.all([
+        attendanceService.getHistory(date),
+        attendanceService.getDailySummary(date).catch(() => null)
+      ]);
+      setAttendances(Array.isArray(historyData) ? historyData : []);
+      if (summaryData && summaryData.is_holiday) {
+        setHolidayInfo({ isHoliday: true, name: summaryData.holiday_description });
+      } else {
+        setHolidayInfo({ isHoliday: false, name: "" });
+      }
     } catch (error) {
       console.error("Error fetching attendance:", error);
     } finally {
@@ -111,6 +120,17 @@ export default function AttendancePage() {
         {" "}
         <span className="text-gray-400">({attendances.length} data)</span>
       </p>
+
+      {/* Banner Tanggal Merah */}
+      {holidayInfo.isHoliday && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-800 shadow-sm">
+          <CalendarDays className="shrink-0 text-red-500 animate-bounce" size={20} />
+          <div>
+            <span className="font-bold text-red-900">Hari Libur Nasional: </span>
+            <span>{holidayInfo.name || "Hari Libur Resmi"}</span>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <Table>
