@@ -406,10 +406,12 @@ exports.getMonthlySummary = async (req, res) => {
       // Build a set of dates covered by approved leave
       const leaveDates = new Set();
       for (const lr of leaveResult.rows) {
-        let cur = new Date(lr.start_date + 'T00:00:00');
-        const end = new Date(lr.end_date + 'T00:00:00');
+        const startStr = new Date(lr.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        const endStr = new Date(lr.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        let cur = new Date(startStr + 'T00:00:00');
+        const end = new Date(endStr + 'T00:00:00');
         while (cur <= end) {
-          leaveDates.add(cur.toISOString().split('T')[0]);
+          leaveDates.add(cur.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }));
           cur.setDate(cur.getDate() + 1);
         }
       }
