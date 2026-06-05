@@ -269,6 +269,7 @@ exports.getDailySummary = async (req, res) => {
         AND a.schedule_id = s.id
         AND DATE((a.check_in AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Jakarta') = $2
       WHERE u.role = 'karyawan'
+        AND DATE((u.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Jakarta') <= $2
       ORDER BY u.name ASC
     `, [dayOfWeek, dateStr]);
 
@@ -344,7 +345,7 @@ exports.getMonthlySummary = async (req, res) => {
 
     // Get all karyawan (optionally filtered)
     const usersResult = await db.query(
-      `SELECT u.id, u.name, u.email, d.name AS department_name
+      `SELECT u.id, u.name, u.email, u.created_at, d.name AS department_name
        FROM users u
        LEFT JOIN departments d ON u.department_id = d.id
        WHERE u.role = 'karyawan'
@@ -417,6 +418,9 @@ exports.getMonthlySummary = async (req, res) => {
       const days = [];
       let countHadir = 0, countTerlambat = 0, countAlpha = 0, countIzin = 0, countLibur = 0;
 
+      // Extract user's creation date in Asia/Jakarta timezone context
+      const userCreatedDateStr = new Date(user.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
       for (let d = 1; d <= lastDay; d++) {
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay();
@@ -430,18 +434,22 @@ exports.getMonthlySummary = async (req, res) => {
         const holidayDescription = isNationalHoliday ? holidaysMap.get(dateStr) : null;
 
         let status;
-        if (onLeave) {
-          status = att?.status || 'izin';
-        } else if (att) {
+        if (att) {
           status = att.status;
+        } else if (onLeave) {
+          status = 'izin';
+        } else if (dateStr <= userCreatedDateStr) {
+          // If the day is before or on the user's account creation day, and they have no check-in, set as not-active ('-')
+          status = '-';
         } else {
-          // No attendance and no leave
+          // No attendance and no leave, after the creation day
           if (isNationalHoliday) {
             status = 'libur';
           } else {
             // No attendance, no leave, not a holiday = alpha (only if date has passed)
-            const dayDate = new Date(dateStr + 'T23:59:59');
-            status = dayDate < new Date() ? 'alpha' : 'upcoming';
+            // Use lexicographical comparison to check if the day is in the past compared to today in Jakarta timezone
+            const todayJakartaStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // "YYYY-MM-DD"
+            status = dateStr < todayJakartaStr ? 'alpha' : 'upcoming';
           }
         }
 
@@ -477,7 +485,7 @@ exports.getMonthlySummary = async (req, res) => {
           alpha: countAlpha,
           izin_sakit: countIzin,
           libur: countLibur,
-          total_work_days: days.length,
+          total_work_days: days.filter(day => day.status !== '-').length,
         },
         days,
       });
