@@ -37,6 +37,13 @@ Dokumen ini mendokumentasikan pembenahan besar pada halaman **Rekap Gaji**, **De
 
 ---
 
+## 5. Fitur Ekspor Rekap Gaji (Excel) & Slip Gaji Individu (PDF)
+
+* **Ekspor Excel Rekap Gaji Bulanan:** Menambahkan tombol **Ekspor Excel** di halaman gaji. Tombol ini otomatis mengunduh file `.xlsx` dari daftar gaji karyawan yang sudah disimpan (`is_saved = true`), sesuai dengan filter Bulan, Tahun, dan Departemen yang sedang aktif di layar. Format Excel dibuat premium (header Indigo, border, format Rupiah `"Rp"#,##0`, dan baris penjumlahan total otomatis di paling bawah).
+* **Ekspor PDF Slip Gaji (Invoice Style):** Menambahkan tombol ikon berkas PDF (warna merah) di samping tombol *Saved*. Jika diklik, slip gaji individual karyawan akan diunduh dengan desain profesional mirip invoice (kop surat PT Danadyaksa, detail info karyawan, rekap absensi bulanan, tabel rincian uang penerimaan/potongan, terjemahan kalimat terbilang rupiah, serta tanda tangan HRD).
+
+---
+
 ## Berkas yang Dimodifikasi
 
 ### Backend API
@@ -49,8 +56,9 @@ Dokumen ini mendokumentasikan pembenahan besar pada halaman **Rekap Gaji**, **De
 - **[salaryController.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/backend-api/controllers/salaryController.js)**: logika retrieval rekap gaji + absensi karyawan terfilter, serta logika upsert.
 
 ### Frontend Web HRD
+- **[package.json](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/package.json)**: Menambahkan dependensi `exceljs`, `jspdf`, dan `jspdf-autotable`.
 - **[holidayService.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/lib/services/holidayService.js) [NEW]**: Panggilan API hari libur khusus.
 - **[settings/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/settings/page.jsx)**: UI dialog popup dan tabel kelola hari libur khusus.
 - **[departments/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/departments/page.jsx)**: UI input dan kolom Gaji Pokok Standar departemen.
 - **[salaryService.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/lib/services/salaryService.js)**: parsing filter parameters.
-- **[salaries/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/salaries/page.jsx)**: UI rekap gaji interaktif dan terintegrasi.
+- **[salaries/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/salaries/page.jsx)**: UI rekap gaji interaktif dan terintegrasi beserta fitur unduh Excel & PDF.

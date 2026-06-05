@@ -14,6 +14,7 @@ graph TD
     A --> E[4. Kehadiran Bulanan & Laporan]
     A --> F[5. Departemen & Rekap Gaji]
     A --> G[6. Kelola Hari Libur Khusus]
+    A --> H[7. Ekspor Excel & PDF Gaji]
 
     B --> B1[Firebase Storage -> ImgBB]
     C --> C1[Penyelarasan Multipart & Error Handling]
@@ -26,6 +27,8 @@ graph TD
     F --> F3[Fix Infinite Loop Salaries Page]
     G --> G1[Database Holidays & CRUD Pop-up]
     G --> G2[Merge API Nasional & DB Lokal]
+    H --> H1[Ekspor Excel Bulanan Terfilter]
+    H --> H2[Ekspor PDF Slip Gaji Karyawan]
 ```
 
 ---
@@ -86,6 +89,13 @@ graph TD
   * [backend-api/controllers/holidayController.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/backend-api/controllers/holidayController.js)
   * [backend-api/routes/holidayRoutes.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/backend-api/routes/holidayRoutes.js)
   * [web-hrd/app/dashboard/settings/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/settings/page.jsx)
+
+### 7. Ekspor Rekap Gaji (Excel) & Slip Gaji Individu (PDF)
+* **Ekspor Excel Bulanan Terfilter:** HRD dapat mengunduh seluruh rekap gaji karyawan yang sudah tersimpan (`is_saved = true`) dalam format `.xlsx`. File Excel dihias dengan latar header berwarna Indigo, border, pemformatan mata uang rupiah (`Rp #,##0`), serta baris total penjumlahan otomatis di bagian bawah.
+* **Ekspor PDF Slip Gaji Karyawan:** Menambahkan tombol unduh PDF (warna merah) di samping tombol *Saved*. Ketika diklik, HRD dapat mengunduh slip gaji individu karyawan bersangkutan dengan format modern ala invoice (kop surat PT Danadyaksa, data karyawan, ringkasan kehadiran bulanan, tabel rincian pendapatan & potongan, spell-out kalimat terbilang rupiah, serta area tanda tangan HRD).
+* **File Terkait:**
+  * [web-hrd/package.json](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/package.json)
+  * [web-hrd/app/dashboard/salaries/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/salaries/page.jsx)
 
 ---
 
