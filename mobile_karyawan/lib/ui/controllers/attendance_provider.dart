@@ -79,14 +79,14 @@ class AttendanceProvider extends ChangeNotifier {
         return true;
       } else {
         print('❌ checkIn gagal: ${result['message']}');
+        throw Exception(result['message'] ?? 'Check-in gagal');
       }
     } catch (e) {
       print("Error check in: $e");
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
     }
-
-    _isLoading = false;
-    notifyListeners();
-    return false;
   }
 
   Future<bool> checkOut(Map<String, dynamic> data) async {
@@ -112,13 +112,13 @@ class AttendanceProvider extends ChangeNotifier {
         return true;
       } else {
         print('❌ checkOut gagal: ${result['message']}');
+        throw Exception(result['message'] ?? 'Check-out gagal');
       }
     } catch (e) {
       print("Error check out: $e");
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
     }
-
-    _isLoading = false;
-    notifyListeners();
-    return false;
   }
 }
