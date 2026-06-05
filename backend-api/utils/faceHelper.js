@@ -63,8 +63,6 @@ const verifyFaces = async (registeredFaceUrl, capturedFaceUrl) => {
     console.log('[Face Helper] Detecting face in selfie...');
     const faceId2 = await detectFaceId(capturedFaceUrl);
 
-    const endpoint = process.env.AZURE_FACE_ENDPOINT;
-    const key = process.env.AZURE_FACE_KEY;
     const baseEndpoint = endpoint.replace(/\/$/, '');
     const verifyUrl = `${baseEndpoint}/face/v1.0/verify`;
 
