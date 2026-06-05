@@ -1,4 +1,4 @@
-const db = require('../config/firebase');
+const db = require('../firebase');
 
 // 1. Menyimpan Mobile Error Log (Otomatis membuat collection 'mobile_error_logs')
 const saveMobileError = async (req, res) => {

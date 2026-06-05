@@ -44,21 +44,54 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+
+    if (!token || !storedUser) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.replace("/login");
+      return;
     }
-  }, []);
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser.role !== "hrd") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.replace("/login");
+        return;
+      }
+      setUser(parsedUser);
+      setIsLoading(false);
+    } catch (error) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.replace("/login");
+    }
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.push("/login");
+    router.replace("/login");
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium text-slate-500">Memeriksa sesi...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

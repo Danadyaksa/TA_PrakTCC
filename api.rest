@@ -1,5 +1,17 @@
 @baseUrl = http://localhost:5000/api
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImhyZCIsImlhdCI6MTc3OTM3NTEyNCwiZXhwIjoxNzc5NDYxNTI0fQ.5DnynGZcwgTQ2N8XcTCr3DzBbOIIWMxFu6yPDFAB71Q
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwicm9sZSI6ImhyZCIsImlhdCI6MTc4MDU4OTI2MCwiZXhwIjoxNzgwNjc1NjYwfQ.oM-XBpupxiCGSAt9gRn2rg7zp_GcMzmr_LHYZYPaVAs
+
+# =============================================
+# CARA PAKAI:
+# 1. Jalankan backend: cd backend-api && npm run dev
+# 2. Klik "Send Request" di bawah request yang mau dites
+# 3. Setelah login, copy token dari response dan paste di @authToken di atas
+# =============================================
+
+
+### ============================================================
+### AUTH — /api/auth
+### ============================================================
 
 ### 1. Register HRD
 POST {{baseUrl}}/auth/register
@@ -12,8 +24,23 @@ Content-Type: application/json
   "role": "hrd"
 }
 
-### 2. Login HRD
-# @name login
+###
+
+### 2. Register Karyawan
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Budi Karyawan",
+  "email": "budi@perusahaan.com",
+  "password": "password123",
+  "role": "karyawan",
+  "department_id": 1
+}
+
+###
+
+### 3. Login HRD (copy token dari response ke @authToken di atas)
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -22,76 +49,433 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### 3. Create Department (HRD Only)
+###
+
+### 4. Login dengan password salah (skenario negatif)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "hrd@perusahaan.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### 5. Get Profile
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+###
+
+### 6. Update Profile
+PUT {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Super HRD Updated"
+}
+
+###
+
+### 7. Change Password
+PUT {{baseUrl}}/auth/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "current_password": "password123",
+  "new_password": "newpassword123"
+}
+
+###
+
+
+### ============================================================
+### DEPARTMENTS — /api/departments
+### ============================================================
+
+### 8. Get All Departments
+GET {{baseUrl}}/departments
+Authorization: Bearer {{authToken}}
+
+###
+
+### 9. Create Department
 POST {{baseUrl}}/departments
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "name": "IT Support",
-  "description": "Divisi teknologi dan infrastruktur"
+  "name": "IT",
+  "description": "Divisi Teknologi dan Infrastruktur"
 }
 
-### 4. Get All Departments
-GET {{baseUrl}}/departments
+###
+
+### 10. Update Department
+PUT {{baseUrl}}/departments/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "IT Department",
+  "description": "Divisi Teknologi"
+}
+
+###
+
+### 11. Delete Department
+DELETE {{baseUrl}}/departments/1
 Authorization: Bearer {{authToken}}
 
-### 5. Create Work Location
+###
+
+
+### ============================================================
+### LOCATIONS — /api/locations
+### ============================================================
+
+### 12. Get All Locations
+GET {{baseUrl}}/locations
+Authorization: Bearer {{authToken}}
+
+###
+
+### 13. Create Location
 POST {{baseUrl}}/locations
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
   "name": "Kantor Pusat",
-  "latitude": -6.1751,
-  "longitude": 106.8272,
+  "latitude": -7.7956,
+  "longitude": 110.3695,
   "radius_meters": 100
 }
 
-### 6. Create Schedule for User (Use user_id from register/login)
-POST {{baseUrl}}/schedules
+###
+
+### 14. Update Location
+PUT {{baseUrl}}/locations/1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "user_id": 1,
-  "day_of_week": 4,
-  "shift_start": "08:00:00",
+  "name": "Kantor Pusat Yogyakarta",
+  "latitude": -7.7956,
+  "longitude": 110.3695,
+  "radius_meters": 150
+}
+
+###
+
+### 15. Delete Location
+DELETE {{baseUrl}}/locations/1
+Authorization: Bearer {{authToken}}
+
+###
+
+
+### ============================================================
+### USERS — /api/users (HRD only)
+### ============================================================
+
+### 16. Get All Users
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+
+###
+
+### 17. Create User
+POST {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Andi Karyawan",
+  "email": "andi@perusahaan.com",
+  "password": "password123",
+  "role": "karyawan",
+  "department_id": 1
+}
+
+###
+
+### 18. Update User
+PUT {{baseUrl}}/users/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Andi Karyawan Updated",
+  "email": "andi@perusahaan.com",
+  "department_id": 1
+}
+
+###
+
+### 19. Delete User
+DELETE {{baseUrl}}/users/2
+Authorization: Bearer {{authToken}}
+
+###
+
+
+### ============================================================
+### SCHEDULES — /api/schedules
+### ============================================================
+
+### 20. Get All Schedules
+GET {{baseUrl}}/schedules
+Authorization: Bearer {{authToken}}
+
+###
+
+### 21. Get My Schedules
+GET {{baseUrl}}/schedules/my
+Authorization: Bearer {{authToken}}
+
+###
+
+### 22. Init Department Schedule (Senin-Jumat 08:00-16:00)
+POST {{baseUrl}}/schedules/init-department
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "department_id": 1
+}
+
+###
+
+### 23. Update Schedule
+PUT {{baseUrl}}/schedules/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "shift_start": "09:00:00",
   "shift_end": "17:00:00"
 }
 
-### 7. Check-in (Simulasi Mobile)
+###
+
+### 24. Delete Department Schedule
+DELETE {{baseUrl}}/schedules/department/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### 25. Delete Single Schedule
+DELETE {{baseUrl}}/schedules/1
+Authorization: Bearer {{authToken}}
+
+###
+
+
+### ============================================================
+### RULES — /api/rules
+### ============================================================
+
+### 26. Get Rules
+GET {{baseUrl}}/rules
+Authorization: Bearer {{authToken}}
+
+###
+
+### 27. Update Rules
+PUT {{baseUrl}}/rules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "tolerance_minutes": 15,
+  "absent_after_minutes": 60
+}
+
+###
+
+
+### ============================================================
+### ATTENDANCE — /api/attendance
+### ============================================================
+
+### 28. Check-in (dalam radius, wajah terdeteksi)
 POST {{baseUrl}}/attendance/check-in
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
   "schedule_id": 1,
-  "latitude": -6.1751,
-  "longitude": 106.8272,
-  "selfie_url": "https://storage.com/foto-selfie.jpg",
+  "latitude": -7.7956,
+  "longitude": 110.3695,
+  "selfie_url": "https://storage.example.com/selfie-checkin.jpg",
   "liveness_score": 0.95
 }
 
-### 8. Check-out
+###
+
+### 29. Check-in setelah melewati batas alpha (skenario negatif - 403)
+POST {{baseUrl}}/attendance/check-in
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "schedule_id": 1,
+  "latitude": -7.7956,
+  "longitude": 110.3695,
+  "selfie_url": "https://storage.example.com/selfie.jpg",
+  "liveness_score": 0.91
+}
+
+###
+
+### 30. Check-out
 POST {{baseUrl}}/attendance/check-out
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "attendance_id": 1
+  "attendance_id": 1,
+  "latitude": -7.7956,
+  "longitude": 110.3695,
+  "selfie_url": "https://storage.example.com/selfie-checkout.jpg",
+  "liveness_score": 0.92
 }
 
-### 9. Get Attendance History
+###
+
+### 31. Get Attendance History
 GET {{baseUrl}}/attendance/history
 Authorization: Bearer {{authToken}}
 
-### 10. Update Attendance Rules
-PUT {{baseUrl}}/rules
+###
+
+### 32. Get Attendance History by Date
+GET {{baseUrl}}/attendance/history?date=2026-06-04
+Authorization: Bearer {{authToken}}
+
+###
+
+### 33. Get Daily Summary (HRD)
+GET {{baseUrl}}/attendance/daily-summary?date=2026-06-04
+Authorization: Bearer {{authToken}}
+
+###
+
+### 34. Get Monthly Summary (HRD)
+GET {{baseUrl}}/attendance/monthly-summary?month=6&year=2026
+Authorization: Bearer {{authToken}}
+
+###
+
+
+### ============================================================
+### LEAVES — /api/leaves
+### ============================================================
+
+### 35. Get All Leaves
+GET {{baseUrl}}/leaves
+Authorization: Bearer {{authToken}}
+
+###
+
+### 36. Get Active Leave Today
+GET {{baseUrl}}/leaves/active-today
+Authorization: Bearer {{authToken}}
+
+###
+
+### 37. Apply Leave
+POST {{baseUrl}}/leaves
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "tolerance_minutes": 10,
-  "absent_after_minutes": 45
+  "type": "izin",
+  "start_date": "2026-06-10",
+  "end_date": "2026-06-10",
+  "reason": "Keperluan keluarga"
 }
+
+###
+
+### 38. Update Leave Status (HRD - Approve)
+PUT {{baseUrl}}/leaves/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "approved"
+}
+
+###
+
+### 39. Update Leave Status (HRD - Reject)
+PUT {{baseUrl}}/leaves/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "rejected"
+}
+
+###
+
+
+### ============================================================
+### SALARIES — /api/salaries
+### ============================================================
+
+### 40. Get Salaries
+GET {{baseUrl}}/salaries
+Authorization: Bearer {{authToken}}
+
+###
+
+### 41. Create Salary
+POST {{baseUrl}}/salaries
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "user_id": 2,
+  "month": 6,
+  "year": 2026,
+  "basic_salary": 5000000,
+  "allowances": 500000,
+  "deductions": 200000
+}
+
+###
+
+
+### ============================================================
+### LOGS — /api/logs
+### ============================================================
+
+### 42. Log Mobile Error
+POST {{baseUrl}}/logs/error
+Content-Type: application/json
+
+{
+  "user_id": 2,
+  "error_type": "NetworkException",
+  "message": "Failed to connect to server"
+}
+
+###
+
+### 43. Send Notification (HRD Broadcast)
+POST {{baseUrl}}/logs/notification
+Content-Type: application/json
+
+{
+  "title": "Pengumuman",
+  "message": "Besok libur nasional, tidak ada presensi",
+  "target_user_id": "all"
+}
+
+###
