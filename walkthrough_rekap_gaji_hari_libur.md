@@ -40,7 +40,15 @@ Dokumen ini mendokumentasikan pembenahan besar pada halaman **Rekap Gaji**, **De
 ## 5. Fitur Ekspor Rekap Gaji (Excel) & Slip Gaji Individu (PDF)
 
 * **Ekspor Excel Rekap Gaji Bulanan:** Menambahkan tombol **Ekspor Excel** di halaman gaji. Tombol ini otomatis mengunduh file `.xlsx` dari daftar gaji karyawan yang sudah disimpan (`is_saved = true`), sesuai dengan filter Bulan, Tahun, dan Departemen yang sedang aktif di layar. Format Excel dibuat premium (header Indigo, border, format Rupiah `"Rp"#,##0`, dan baris penjumlahan total otomatis di paling bawah).
-* **Ekspor PDF Slip Gaji (Invoice Style):** Menambahkan tombol ikon berkas PDF (warna merah) di samping tombol *Saved*. Jika diklik, slip gaji individual karyawan akan diunduh dengan desain profesional mirip invoice (kop surat PT Danadyaksa, detail info karyawan, rekap absensi bulanan, tabel rincian uang penerimaan/potongan, terjemahan kalimat terbilang rupiah, serta tanda tangan HRD).
+* **Ekspor PDF Slip Gaji (Invoice Style):** Menambahkan tombol ikon berkas PDF (warna merah) di samping tombol *Saved*. Jika diklik, slip gaji individual karyawan akan diunduh dengan desain profesional mirip invoice (kop surat **PT Basikal Jaya**, detail info karyawan, rekap absensi bulanan, tabel rincian uang penerimaan/potongan, terjemahan kalimat terbilang rupiah, serta tanda tangan HRD). *Perbaikan:* Import dynamic `jspdf-autotable` telah diperbaiki menggunakan standard `autoTable` loader agar dapat berjalan tanpa *crash* di browser.
+
+---
+
+## 6. Rebranding PT Basikal Jaya, Penghapusan Kolom ID & Double-Click Sorting
+
+* **Rebranding PT Basikal Jaya:** Nama PT pada login portal HRD, logo sidebar kiri atas, dan header PDF slip gaji telah diganti dari `PresensiApp` / `PT Danadyaksa` menjadi **PT Basikal Jaya** (tanpa mengubah aplikasi mobile Flutter).
+* **Penghapusan Kolom ID:** Kolom "ID" dan data `#{id}` telah dihapus dari tabel Karyawan (`users/page.jsx`) dan tabel Departemen (`departments/page.jsx`) agar tampilan lebih bersih.
+* **Double-Click Sorting:** Header kolom di seluruh tabel utama (Karyawan, Departemen, Lokasi, Presensi Harian & Detail Bulanan, Cuti & Izin, serta Gaji) sekarang mendukung pengurutan baris secara otomatis saat di-klik 2 kali (`onDoubleClick`). Pengurutan pertama kali berupa A-Z (Ascending) dan klik berikutnya Z-A (Descending), dengan pointer hover berupa cursor tangan (`cursor-pointer select-none`).
 
 ---
 
@@ -58,7 +66,14 @@ Dokumen ini mendokumentasikan pembenahan besar pada halaman **Rekap Gaji**, **De
 ### Frontend Web HRD
 - **[package.json](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/package.json)**: Menambahkan dependensi `exceljs`, `jspdf`, dan `jspdf-autotable`.
 - **[holidayService.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/lib/services/holidayService.js) [NEW]**: Panggilan API hari libur khusus.
+- **[components/layout/SidebarLayout.tsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/components/layout/SidebarLayout.tsx)**: Mengubah brand sidebar menjadi PT Basikal Jaya.
+- **[login/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/login/page.jsx)**: Mengubah brand login menjadi PT Basikal Jaya.
 - **[settings/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/settings/page.jsx)**: UI dialog popup dan tabel kelola hari libur khusus.
-- **[departments/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/departments/page.jsx)**: UI input dan kolom Gaji Pokok Standar departemen.
+- **[departments/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/departments/page.jsx)**: UI input dan kolom Gaji Pokok Standar, hapus kolom ID, serta sorting onDoubleClick.
+- **[users/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/users/page.jsx)**: Hapus kolom ID, serta sorting onDoubleClick.
+- **[locations/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/locations/page.jsx)**: Sorting onDoubleClick pada tabel lokasi.
+- **[attendance/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/attendance/page.jsx)**: Sorting onDoubleClick pada tabel absensi harian.
+- **[attendance/monthly/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/attendance/monthly/page.jsx)**: Sorting onDoubleClick pada sub-tabel harian.
+- **[leaves/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/leaves/page.jsx)**: Sorting onDoubleClick pada tabel cuti/izin.
 - **[salaryService.js](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/lib/services/salaryService.js)**: parsing filter parameters.
-- **[salaries/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/salaries/page.jsx)**: UI rekap gaji interaktif dan terintegrasi beserta fitur unduh Excel & PDF.
+- **[salaries/page.jsx](file:///d:/IF23/SMT%206/Prak%20TCC/TA_TCC/web-hrd/app/dashboard/salaries/page.jsx)**: UI rekap gaji interaktif dan terintegrasi beserta fitur unduh Excel & PDF, perbaikan dynamic autoTable, dan sorting onDoubleClick.
