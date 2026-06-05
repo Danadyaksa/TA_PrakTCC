@@ -79,7 +79,7 @@ export default function SalariesPage() {
     } finally {
       setLoading(false);
     }
-  }, [month, year, selectedDept, showToast]);
+  }, [month, year, selectedDept]);
 
   useEffect(() => {
     fetchData();
