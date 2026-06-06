@@ -18,7 +18,6 @@ const getHolidaysMap = async (year, month) => {
   try {
     console.log(`[Holiday Service] Fetching holidays from API for ${cacheKey}...`);
     
-    // 1. Call the Indonesian holiday API (supports year and month parameters)
     const url = `https://api-hari-libur.vercel.app/api?year=${year}&month=${month}`;
     const response = await fetch(url);
     
@@ -38,7 +37,6 @@ const getHolidaysMap = async (year, month) => {
   }
 
   try {
-    // 2. Fetch custom holidays from PostgreSQL database for the target year and month
     const dbHolidays = await db.query(
       `SELECT holiday_date, description FROM holidays 
        WHERE EXTRACT(YEAR FROM holiday_date) = $1 

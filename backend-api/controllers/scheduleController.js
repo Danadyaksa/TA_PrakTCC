@@ -2,7 +2,6 @@ const db = require('../db');
 
 const DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
-// @desc    Get all schedules grouped by department
 exports.getSchedules = async (req, res) => {
   try {
     const result = await db.query(`
@@ -18,7 +17,6 @@ exports.getSchedules = async (req, res) => {
   }
 };
 
-// @desc    Get MY schedules (by department of logged-in user)
 exports.getMySchedules = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -45,7 +43,6 @@ exports.getMySchedules = async (req, res) => {
   }
 };
 
-// @desc    Init schedules for a department (Senin-Jumat default 08:00-16:00)
 exports.initDepartmentSchedule = async (req, res) => {
   const { department_id } = req.body;
   try {
@@ -77,7 +74,6 @@ exports.initDepartmentSchedule = async (req, res) => {
   }
 };
 
-// @desc    Update a single schedule slot (shift_start + shift_end only)
 exports.updateSchedule = async (req, res) => {
   const { id } = req.params;
   const { shift_start, shift_end } = req.body;
@@ -96,7 +92,6 @@ exports.updateSchedule = async (req, res) => {
   }
 };
 
-// @desc    Delete all schedules for a department
 exports.deleteDepartmentSchedule = async (req, res) => {
   const { department_id } = req.params;
   try {

@@ -1,6 +1,5 @@
 const db = require('../firebase');
 
-// 1. Menyimpan Mobile Error Log (Otomatis membuat collection 'mobile_error_logs')
 const saveMobileError = async (req, res) => {
   try {
     const { user_id, error_type, message } = req.body;
@@ -18,7 +17,6 @@ const saveMobileError = async (req, res) => {
   }
 };
 
-// 2. Mengirim Notifikasi Real-time (Otomatis membuat collection 'notifications')
 const createNotification = async (req, res) => {
   try {
     const { title, message, target_user_id } = req.body;

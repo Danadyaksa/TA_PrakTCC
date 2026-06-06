@@ -1,6 +1,5 @@
 const db = require('../db');
 
-// @desc    Get all locations
 exports.getLocations = async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM work_locations ORDER BY name ASC');
@@ -10,7 +9,6 @@ exports.getLocations = async (req, res) => {
   }
 };
 
-// @desc    Create location
 exports.createLocation = async (req, res) => {
   const { name, latitude, longitude, radius_meters } = req.body;
   try {
@@ -25,7 +23,6 @@ exports.createLocation = async (req, res) => {
   }
 };
 
-// @desc    Update location
 exports.updateLocation = async (req, res) => {
   const { id } = req.params;
   const { name, latitude, longitude, radius_meters } = req.body;
@@ -41,7 +38,6 @@ exports.updateLocation = async (req, res) => {
   }
 };
 
-// @desc    Delete location
 exports.deleteLocation = async (req, res) => {
   const { id } = req.params;
   try {

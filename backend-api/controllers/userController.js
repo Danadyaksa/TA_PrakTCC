@@ -2,7 +2,6 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { uploadToStorage } = require('../utils/storageHelper');
 
-// @desc    Get all users (employees)
 exports.getUsers = async (req, res) => {
   try {
     const result = await db.query(
@@ -14,7 +13,6 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// @desc    Create new user (by HRD)
 exports.createUser = async (req, res) => {
   const { name, email, password, role, department_id } = req.body;
   try {
@@ -31,7 +29,6 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// @desc    Update user
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, email, department_id } = req.body;
@@ -50,7 +47,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// @desc    Delete user
 exports.deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
@@ -61,7 +57,6 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Register / update user face reference photo
 exports.registerFace = async (req, res) => {
   const { id } = req.params;
   
@@ -70,7 +65,6 @@ exports.registerFace = async (req, res) => {
   }
 
   try {
-    // 1. Check if user exists
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
@@ -84,7 +78,6 @@ exports.registerFace = async (req, res) => {
     console.log(`[User Controller] Uploading face photo for user ${id} to Firebase Storage...`);
     const faceUrl = await uploadToStorage(req.file.buffer, destPath, req.file.mimetype);
 
-    // 3. Update PostgreSQL
     await db.query('UPDATE users SET face_url = $1 WHERE id = $2', [faceUrl, id]);
 
     res.json({

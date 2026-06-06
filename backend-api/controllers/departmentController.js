@@ -1,6 +1,6 @@
 const db = require('../db');
 
-// @desc    Get all departments
+
 exports.getDepartments = async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM departments ORDER BY name ASC');
@@ -10,7 +10,6 @@ exports.getDepartments = async (req, res) => {
   }
 };
 
-// @desc    Create department
 exports.createDepartment = async (req, res) => {
   const { name, description, basic_salary } = req.body;
   try {
@@ -24,7 +23,6 @@ exports.createDepartment = async (req, res) => {
   }
 };
 
-// @desc    Update department
 exports.updateDepartment = async (req, res) => {
   const { id } = req.params;
   const { name, description, basic_salary } = req.body;
@@ -40,7 +38,7 @@ exports.updateDepartment = async (req, res) => {
   }
 };
 
-// @desc    Delete department
+
 exports.deleteDepartment = async (req, res) => {
   const { id } = req.params;
   try {

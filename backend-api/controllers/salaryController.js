@@ -1,6 +1,5 @@
 const db = require('../db');
 
-// @desc    Get salaries (with filter, pre-population, and attendance summary for HRD, or own list for karyawan)
 exports.getSalaries = async (req, res) => {
   if (req.user.role !== 'hrd') {
     // Karyawan hanya bisa melihat histori gajinya sendiri
@@ -27,7 +26,6 @@ exports.getSalaries = async (req, res) => {
     const year = parseInt(req.query.year) || new Date().getFullYear();
     const departmentId = req.query.department_id ? parseInt(req.query.department_id) : null;
 
-    // 1. Ambil seluruh karyawan terfilter, beserta nama departemen dan gaji pokok divisi mereka
     let query = `
       SELECT u.id, u.name, u.email, u.created_at, d.id AS department_id, d.name AS department_name, COALESCE(d.basic_salary, 0) AS dept_basic_salary
       FROM users u
@@ -44,7 +42,6 @@ exports.getSalaries = async (req, res) => {
     const employeesResult = await db.query(query, params);
     const employees = employeesResult.rows;
 
-    // 2. Ambil data gaji yang sudah pernah tersimpan untuk kombinasi bulan & tahun ini
     const salariesResult = await db.query(
       `SELECT * FROM salaries WHERE month = $1 AND year = $2`,
       [month, year]
@@ -54,7 +51,6 @@ exports.getSalaries = async (req, res) => {
       salariesByUserId[s.user_id] = s;
     }
 
-    // 3. Ambil peta hari libur nasional bulan/tahun berjalan
     const { getHolidaysMap } = require('../utils/holidayHelper');
     const holidaysMap = await getHolidaysMap(year, month);
 
@@ -178,7 +174,6 @@ exports.getSalaries = async (req, res) => {
   }
 };
 
-// @desc    Create/Update salary (HRD) - bertindak sebagai Upsert
 exports.createSalary = async (req, res) => {
   const { user_id, month, year, basic_salary, allowances, deductions } = req.body;
   const net_salary = parseFloat(basic_salary) + parseFloat(allowances || 0) - parseFloat(deductions || 0);

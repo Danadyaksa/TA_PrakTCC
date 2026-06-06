@@ -37,7 +37,6 @@ class AuthProvider extends ChangeNotifier {
         _user = await _authService.getUser();
       }
       _isAuthenticated = _user != null;
-      // Set userId untuk notification service
       if (_user != null) {
         NotificationService().currentUserId = _user!.id;
       }
@@ -62,7 +61,6 @@ class AuthProvider extends ChangeNotifier {
       if (result['token'] != null) {
         _user = User.fromJson(result['user']);
         _isAuthenticated = true;
-        // Set userId untuk notification service
         NotificationService().currentUserId = _user!.id;
         notifyListeners();
         print('✅ Login successful for user: ${_user?.name}');

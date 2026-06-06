@@ -4,7 +4,6 @@ const { getHolidaysMap, checkHoliday } = require('../utils/holidayHelper');
 const { uploadToStorage } = require('../utils/storageHelper');
 const { verifyFaces } = require('../utils/faceHelper');
 
-// @desc    Check-in
 exports.checkIn = async (req, res) => {
   const { schedule_id, latitude, longitude, liveness_score } = req.body;
   const user_id = req.user.id;
@@ -14,7 +13,6 @@ exports.checkIn = async (req, res) => {
   }
 
   try {
-    // 0. Ambil foto referensi wajah user dari DB
     const userResult = await db.query('SELECT face_url FROM users WHERE id = $1', [user_id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ message: 'Data user tidak ditemukan' });
@@ -27,7 +25,6 @@ exports.checkIn = async (req, res) => {
       });
     }
 
-    // 1. Get Schedule & Rules
     const scheduleResult = await db.query('SELECT * FROM schedules WHERE id = $1', [schedule_id]);
     const rulesResult = await db.query('SELECT * FROM attendance_rules LIMIT 1');
     const rules = rulesResult.rows[0] || { tolerance_minutes: 15 };
@@ -35,7 +32,6 @@ exports.checkIn = async (req, res) => {
     if (scheduleResult.rows.length === 0) return res.status(404).json({ message: 'Jadwal tidak ditemukan' });
     const schedule = scheduleResult.rows[0];
 
-    // 2. Calculate Late Minutes
     const nowJakartaStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
     const now = new Date(nowJakartaStr);
     const datePart = nowJakartaStr.split(',')[0];
@@ -58,29 +54,22 @@ exports.checkIn = async (req, res) => {
       status = 'terlambat';
     }
 
-    // 3. Upload selfie ke Firebase Storage
     const timestamp = Date.now();
     const destPath = `selfies/user_${user_id}_${timestamp}_checkin.jpg`;
-    console.log(`[Attendance Controller] Uploading check-in selfie for user ${user_id}...`);
     const selfieUrl = await uploadToStorage(req.file.buffer, destPath, req.file.mimetype);
 
-    // 4. Verifikasi Wajah menggunakan Azure Face API
-    console.log(`[Attendance Controller] Verifying check-in face for user ${user_id}...`);
     const verification = await verifyFaces(registeredFaceUrl, selfieUrl);
     if (!verification.isMatch) {
       return res.status(403).json({ 
         message: `Verifikasi wajah gagal. Wajah Anda tidak cocok dengan foto referensi terdaftar (Confidence: ${(verification.confidence * 100).toFixed(1)}%).` 
       });
     }
-    console.log(`[Attendance Controller] Face verification success (Confidence: ${(verification.confidence * 100).toFixed(1)}%)`);
 
-    // 5. Save to PostgreSQL
     const attendance = await db.query(
       'INSERT INTO attendances (user_id, schedule_id, check_in, status, late_minutes) VALUES ($1, $2, NOW(), $3, $4) RETURNING *',
       [user_id, schedule_id, status, lateMinutes]
     );
 
-    // 6. Save Logs to Firestore (NoSQL)
     await firestore.collection('selfie_logs').add({
       attendance_id: attendance.rows[0].id,
       user_id,
@@ -106,7 +95,6 @@ exports.checkIn = async (req, res) => {
   }
 };
 
-// @desc    Check-out
 exports.checkOut = async (req, res) => {
   const { attendance_id, latitude, longitude, liveness_score } = req.body;
   const user_id = req.user.id;
@@ -116,7 +104,6 @@ exports.checkOut = async (req, res) => {
   }
 
   try {
-    // 0. Ambil foto referensi wajah user dari DB
     const userResult = await db.query('SELECT face_url FROM users WHERE id = $1', [user_id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ message: 'Data user tidak ditemukan' });
@@ -129,23 +116,17 @@ exports.checkOut = async (req, res) => {
       });
     }
 
-    // 1. Upload selfie ke Firebase Storage
     const timestamp = Date.now();
     const destPath = `selfies/user_${user_id}_${timestamp}_checkout.jpg`;
-    console.log(`[Attendance Controller] Uploading check-out selfie for user ${user_id}...`);
     const selfieUrl = await uploadToStorage(req.file.buffer, destPath, req.file.mimetype);
 
-    // 2. Verifikasi Wajah menggunakan Azure Face API
-    console.log(`[Attendance Controller] Verifying check-out face for user ${user_id}...`);
     const verification = await verifyFaces(registeredFaceUrl, selfieUrl);
     if (!verification.isMatch) {
       return res.status(403).json({ 
         message: `Verifikasi wajah gagal. Wajah Anda tidak cocok dengan foto referensi terdaftar (Confidence: ${(verification.confidence * 100).toFixed(1)}%).` 
       });
     }
-    console.log(`[Attendance Controller] Face verification success (Confidence: ${(verification.confidence * 100).toFixed(1)}%)`);
 
-    // 3. Update attendance with check-out time in PostgreSQL
     const result = await db.query(
       'UPDATE attendances SET check_out = NOW() WHERE id = $1 AND user_id = $2 RETURNING *',
       [attendance_id, user_id]
@@ -155,7 +136,6 @@ exports.checkOut = async (req, res) => {
       return res.status(404).json({ message: 'Data presensi tidak ditemukan' });
     }
 
-    // 4. Save Check-out Logs to Firestore
     await firestore.collection('selfie_logs').add({
       attendance_id: parseInt(attendance_id),
       user_id,
@@ -181,7 +161,6 @@ exports.checkOut = async (req, res) => {
   }
 };
 
-// @desc    Get attendance history
 exports.getHistory = async (req, res) => {
   try {
     const { date } = req.query; // format: YYYY-MM-DD
@@ -220,8 +199,6 @@ exports.getHistory = async (req, res) => {
   }
 };
 
-// @desc    Daily attendance summary for HRD
-//          Returns ALL karyawan with a schedule today, including those who didn't check in (alpha)
 exports.getDailySummary = async (req, res) => {
   if (req.user.role !== 'hrd') {
     return res.status(403).json({ message: 'Akses ditolak' });
@@ -234,19 +211,15 @@ exports.getDailySummary = async (req, res) => {
       ? new Date(dateParam + 'T00:00:00+07:00')
       : new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }).split(',')[0]);
 
-    // day_of_week: 0=Sunday ... 6=Saturday
     const dayOfWeek = targetDate.getDay();
-    const dateStr = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateStr = targetDate.toISOString().split('T')[0];
 
-    // 1. Get attendance rules
     const rulesResult = await db.query('SELECT * FROM attendance_rules LIMIT 1');
     const rules = rulesResult.rows[0] || { tolerance_minutes: 15, absent_after_minutes: 60 };
 
     // Check if the target date is a national holiday
     const { isHoliday: isNationalHoliday, description: holidayDescription } = await checkHoliday(dateStr);
 
-    // 2. Get all karyawan who have a schedule on this day (via department)
-    //    LEFT JOIN attendance for that date
     const result = await db.query(`
       SELECT
         u.id          AS user_id,
@@ -273,7 +246,6 @@ exports.getDailySummary = async (req, res) => {
       ORDER BY u.name ASC
     `, [dayOfWeek, dateStr]);
 
-    // 3. For each row without an attendance record, mark as alpha or libur
     const summary = result.rows.map(row => {
       if (!row.attendance_id) {
         return {
@@ -325,9 +297,6 @@ exports.getDailySummary = async (req, res) => {
   }
 };
 
-// @desc    Monthly attendance summary per employee (for HRD)
-//          Returns each employee with counts: hadir, terlambat, alpha, izin/sakit
-//          and a detail list of every scheduled working day that month
 exports.getMonthlySummary = async (req, res) => {
   if (req.user.role !== 'hrd') {
     return res.status(403).json({ message: 'Akses ditolak' });

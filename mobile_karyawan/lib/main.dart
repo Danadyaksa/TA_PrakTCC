@@ -25,9 +25,6 @@ void main() async {
   // Initialize date formatting
   await initializeDateFormatting('id_ID', null);
 
-  // Initialize notification service
-  await NotificationService().init();
-  
   runApp(
     MultiProvider(
       providers: [

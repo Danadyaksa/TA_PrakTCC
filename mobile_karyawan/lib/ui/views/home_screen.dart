@@ -41,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Refresh data setiap kali app di-resume
       _refreshData();
     }
   }
@@ -65,7 +64,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ]);
   }
 
-  // Helper: parse "HH:mm:ss" atau "HH:mm" ke DateTime hari ini
   DateTime _parseShiftTime(String timeStr, DateTime now) {
     final parts = timeStr.split(':');
     final hour = int.parse(parts[0]);
@@ -73,8 +71,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return DateTime(now.year, now.month, now.day, hour, minute);
   }
 
-  // Helper: Cek apakah sudah waktunya check-in
-  // Bisa check-in mulai TEPAT jam shift mulai
   bool _canCheckIn(String shiftStart, DateTime now) {
     try {
       final shiftStartTime = _parseShiftTime(shiftStart, now);
@@ -85,7 +81,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Helper: Cek apakah sudah melewati batas alpha (absent_after_minutes)
   bool _isAlpha(String shiftStart, DateTime now, int absentAfterMinutes) {
     try {
       final shiftStartTime = _parseShiftTime(shiftStart, now);
@@ -96,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Bisa check-out mulai TEPAT jam shift selesai
+  // Bisa check-out mulai jam shift selesai
   bool _canCheckOut(String shiftEnd, DateTime now) {
     try {
       final shiftEndTime = _parseShiftTime(shiftEnd, now);
@@ -108,14 +103,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _handleAttendanceAction(BuildContext context, bool isCheckIn) {
-    // Buka camera screen untuk check-in atau check-out
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AttendanceCameraScreen(isCheckIn: isCheckIn),
       ),
     ).then((_) {
-      // Refresh data setelah kembali dari camera
       context.read<AttendanceProvider>().fetchHistory();
     });
   }
@@ -129,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final todayAtt = attendanceProv.todayAttendance;
     final todaySchedule = scheduleProv.todaySchedule;
 
-    // Logika waktu check-in/check-out
     final now = DateTime.now();
     final canCheckIn = todaySchedule != null && _canCheckIn(todaySchedule.shiftStart, now);
     final isAlpha = todaySchedule != null && todayAtt == null && _isAlpha(todaySchedule.shiftStart, now, scheduleProv.absentAfterMinutes);
@@ -274,7 +266,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 32),
 
-              // Shift Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),

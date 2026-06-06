@@ -1,9 +1,6 @@
 const db = require('../db');
 const { clearHolidaysCache } = require('../utils/holidayHelper');
 
-// @desc    Get all custom holidays
-// @route   GET /api/holidays
-// @access  Private
 exports.getHolidays = async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM holidays ORDER BY holiday_date DESC');
@@ -14,9 +11,6 @@ exports.getHolidays = async (req, res) => {
   }
 };
 
-// @desc    Create a custom holiday (Upsert if date already exists)
-// @route   POST /api/holidays
-// @access  Private/HRD
 exports.createHoliday = async (req, res) => {
   const { holiday_date, description } = req.body;
   try {
@@ -39,9 +33,6 @@ exports.createHoliday = async (req, res) => {
   }
 };
 
-// @desc    Update a custom holiday
-// @route   PUT /api/holidays/:id
-// @access  Private/HRD
 exports.updateHoliday = async (req, res) => {
   const { id } = req.params;
   const { holiday_date, description } = req.body;
@@ -64,9 +55,6 @@ exports.updateHoliday = async (req, res) => {
   }
 };
 
-// @desc    Delete a custom holiday
-// @route   DELETE /api/holidays/:id
-// @access  Private/HRD
 exports.deleteHoliday = async (req, res) => {
   const { id } = req.params;
   try {

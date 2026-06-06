@@ -143,20 +143,19 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
           return;
         }
         
-        // Cek liveness indicators (DIPERKETAT!)
+        // Cek liveness indicators 
         final smileProbability = face.smilingProbability ?? 0.0;
         final leftEyeOpen = face.leftEyeOpenProbability ?? 0.0;
         final rightEyeOpen = face.rightEyeOpenProbability ?? 0.0;
         
-        // Threshold lebih ketat
-        _isSmiling = smileProbability > 0.7; // Naik dari 0.5 ke 0.7
-        _eyesOpen = (leftEyeOpen > 0.8 && rightEyeOpen > 0.8); // Naik dari 0.5 ke 0.8
+        // Threshold 
+        _isSmiling = smileProbability > 0.7; 
+        _eyesOpen = (leftEyeOpen > 0.8 && rightEyeOpen > 0.8); 
         
         // Hitung liveness score (0.0 - 1.0)
         _livenessScore = (smileProbability * 0.4) + 
                         ((leftEyeOpen + rightEyeOpen) / 2 * 0.6); // Lebih fokus ke mata
         
-        // HARUS SENYUM DAN MATA TERBUKA!
         final isValid = _isSmiling && _eyesOpen && _livenessScore > 0.75;
         
         if (!isValid) {
@@ -214,8 +213,6 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
         throw Exception('User not authenticated');
       }
 
-      // 1. Cek Lokasi
-      print('📍 Getting location...');
       final pos = await _locationService.getCurrentLocation();
       
       setState(() => _statusText = "Memeriksa radius...");
@@ -246,20 +243,15 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
       final bool inRadius = true; // sudah pasti dalam radius karena matchedLocation != null
       final workLocation = matchedLocation;
 
-      // 2. Ambil Foto
       setState(() => _statusText = "Mengambil foto...");
-      print('📸 Taking picture...');
       final image = await _controller!.takePicture();
       
-      // 3. Get schedule ID (untuk check-in)
       final schedule = context.read<ScheduleProvider>().todaySchedule;
       if (schedule == null && widget.isCheckIn) {
         throw Exception('Jadwal hari ini tidak ditemukan');
       }
 
-      // 4. Submit ke Backend DULU (tunggu sampe selesai)
       setState(() => _statusText = "Menyimpan presensi...");
-      print('📤 Submitting...');
       
       if (widget.isCheckIn) {
         await context.read<AttendanceProvider>().checkIn({
@@ -278,9 +270,6 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
         });
       }
       
-      print('✅ Submit DONE');
-      
-      // BARU POP SETELAH SUBMIT SELESAI
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -322,7 +311,6 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
       print("❌ ERROR: $e");
       
       if (mounted) {
-        // Bersihkan prefix "Exception: " supaya pesan lebih readable
         final msg = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

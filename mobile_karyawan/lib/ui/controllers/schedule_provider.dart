@@ -41,7 +41,6 @@ class ScheduleProvider extends ChangeNotifier {
       _todaySchedule = await _scheduleService.getTodaySchedule();
       notifyListeners();
 
-      // Jadwalkan notifikasi berdasarkan shift hari ini
       if (_todaySchedule != null) {
         // Ambil alphaMinutes dari rules API, fallback 45 menit
         final rules = await _ruleService.getRules();

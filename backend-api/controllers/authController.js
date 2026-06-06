@@ -6,17 +6,14 @@ exports.register = async (req, res) => {
   const { name, email, password, role, department_id } = req.body;
 
   try {
-    // 1. Cek apakah user sudah ada
     const userExist = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userExist.rows.length > 0) {
       return res.status(400).json({ message: 'Email sudah terdaftar' });
     }
 
-    // 2. Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. Simpan ke Database
     const newUser = await db.query(
       'INSERT INTO users (name, email, password, role, department_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role',
       [name, email, hashedPassword, role || 'karyawan', department_id]
@@ -36,8 +33,6 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // 1. Cari User
-    // 1. Cari User dengan JOIN department
     const userResult = await db.query(
       `SELECT u.*, d.name as department_name 
        FROM users u 
@@ -51,13 +46,11 @@ exports.login = async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // 2. Cek Password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Email atau Password salah' });
     }
 
-    // 3. Generate Token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -81,11 +74,9 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc  Get current logged-in user profile
 exports.getProfile = async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT u.id, u.name, u.email, u.role, d.name as department_name
        FROM users u
        LEFT JOIN departments d ON u.department_id = d.id
        WHERE u.id = $1`,
@@ -101,7 +92,6 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// @desc  Update name
 exports.updateProfile = async (req, res) => {
   const { name } = req.body;
   try {
@@ -116,9 +106,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// @desc  Change password
 exports.changePassword = async (req, res) => {
-  const { current_password, new_password } = req.body;
   try {
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userResult.rows[0];

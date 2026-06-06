@@ -17,21 +17,18 @@ async function createTestUsers() {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('password123', salt);
 
-    // 1. Buat HRD
     await pool.query(`
       INSERT INTO users (name, email, password, role, department_id) 
       VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (email) DO NOTHING
     `, ['Admin HRD', 'hrd@test.com', hashedPassword, 'hrd', 2]);
 
-    // 2. Buat Karyawan
     await pool.query(`
       INSERT INTO users (name, email, password, role, department_id) 
       VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (email) DO NOTHING
     `, ['Budi Santoso', 'karyawan@test.com', hashedPassword, 'karyawan', 1]);
 
-    // 3. Buat Karyawan 2
     await pool.query(`
       INSERT INTO users (name, email, password, role, department_id) 
       VALUES ($1, $2, $3, $4, $5)
@@ -39,7 +36,6 @@ async function createTestUsers() {
     `, ['Siti Nurhaliza', 'siti@test.com', hashedPassword, 'karyawan', 1]);
 
     // 4. Buat jadwal untuk karyawan (user_id 2)
-    await pool.query(`
       INSERT INTO schedules (user_id, day_of_week, shift_start, shift_end)
       VALUES 
         (2, 1, '08:00:00', '17:00:00'),
@@ -52,7 +48,6 @@ async function createTestUsers() {
 
     // 5. Buat lokasi kantor
     await pool.query(`
-      INSERT INTO work_locations (name, latitude, longitude, radius_meters)
       VALUES ('Kantor Pusat', -6.175110, 106.827153, 100)
       ON CONFLICT DO NOTHING
     `);

@@ -1,6 +1,5 @@
 const db = require('../db');
 
-// @desc    Get rules
 exports.getRules = async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM attendance_rules LIMIT 1');
@@ -10,7 +9,6 @@ exports.getRules = async (req, res) => {
   }
 };
 
-// @desc    Update rules
 exports.updateRules = async (req, res) => {
   const { tolerance_minutes, absent_after_minutes } = req.body;
   try {

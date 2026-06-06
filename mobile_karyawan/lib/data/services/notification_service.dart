@@ -32,7 +32,6 @@ class NotificationService {
     await _plugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (details) {
-        // Handle tap notifikasi jika perlu
       },
     );
 
@@ -108,7 +107,7 @@ class NotificationService {
     required int alphaMinutes,   // dari attendance_rules
   }) async {
     await init();
-    await cancelAll(); // Reset notif lama
+    await cancelAll();
 
     final startParts = shiftStart.split(':');
     final endParts = shiftEnd.split(':');
@@ -118,7 +117,6 @@ class NotificationService {
     final endHour = int.parse(endParts[0]);
     final endMin = int.parse(endParts[1]);
 
-    // 1. Reminder check-in: 10 menit sebelum shift mulai
     final checkinReminderMin = startMin - 10;
     final checkinReminderHour = checkinReminderMin < 0 ? startHour - 1 : startHour;
     final checkinReminderMinFinal = checkinReminderMin < 0 ? 60 + checkinReminderMin : checkinReminderMin;
@@ -132,7 +130,6 @@ class NotificationService {
       type: 'info',
     );
 
-    // 2. Warning alpha: [alphaMinutes] setelah shift mulai
     final alphaTotalMin = startMin + alphaMinutes;
     final alphaHour = startHour + (alphaTotalMin ~/ 60);
     final alphaMin = alphaTotalMin % 60;
@@ -146,7 +143,6 @@ class NotificationService {
       type: 'warning',
     );
 
-    // 3. Reminder check-out: 5 menit setelah shift selesai
     final checkoutTotalMin = endMin + 5;
     final checkoutHour = endHour + (checkoutTotalMin ~/ 60);
     final checkoutMin = checkoutTotalMin % 60;

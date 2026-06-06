@@ -1,6 +1,5 @@
 const db = require('../db');
 
-// @desc    Apply for leave
 exports.applyLeave = async (req, res) => {
   const { type, start_date, end_date, reason } = req.body;
   try {
@@ -14,7 +13,6 @@ exports.applyLeave = async (req, res) => {
   }
 };
 
-// @desc    Approve/Reject leave (HRD)
 exports.updateLeaveStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -29,7 +27,7 @@ exports.updateLeaveStatus = async (req, res) => {
   }
 };
 
-// @desc    Get active approved leave for today (karyawan)
+
 exports.getActiveLeave = async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -50,7 +48,7 @@ exports.getActiveLeave = async (req, res) => {
   }
 };
 
-// @desc    Get leave requests
+
 exports.getLeaves = async (req, res) => {
   try {
     const { month, year } = req.query;
